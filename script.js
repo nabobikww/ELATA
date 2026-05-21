@@ -344,6 +344,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectedCheckoutVal = endStr;
                     btnGoToStep2.disabled = false;
 
+                    // Format and populate columns
+                    const formatDateText = (d) => {
+                        return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
+                    };
+                    const checkinInputElem = document.getElementById('checkinPlaceholder');
+                    const checkoutInputElem = document.getElementById('checkoutPlaceholder');
+                    if (checkinInputElem) {
+                        checkinInputElem.innerText = formatDateText(start);
+                        checkinInputElem.classList.remove('is-placeholder');
+                    }
+                    if (checkoutInputElem) {
+                        checkoutInputElem.innerText = formatDateText(end);
+                        checkoutInputElem.classList.remove('is-placeholder');
+                    }
+
+                    // Auto-hide calendar after selection
+                    const calendarContainer = document.getElementById('inlineCalendarContainer');
+                    if (calendarContainer) {
+                        setTimeout(() => {
+                            calendarContainer.classList.add('hidden');
+                            const inspectorPanel = document.querySelector('.room-inspector-panel');
+                            if (inspectorPanel) {
+                                inspectorPanel.classList.remove('calendar-active');
+                            }
+                        }, 400);
+                    }
+
                     // Calculate nights
                     const diffTime = Math.abs(end - start);
                     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -371,8 +398,55 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectedCheckoutVal = "";
                     btnGoToStep2.disabled = true;
                     dateRecapText.innerText = "Дати ще не обрано";
+                    
+                    const checkinInputElem = document.getElementById('checkinPlaceholder');
+                    const checkoutInputElem = document.getElementById('checkoutPlaceholder');
+                    if (checkinInputElem) {
+                        checkinInputElem.innerText = "22.05.2026";
+                        checkinInputElem.classList.add('is-placeholder');
+                    }
+                    if (checkoutInputElem) {
+                        checkoutInputElem.innerText = "28.05.2026";
+                        checkoutInputElem.classList.add('is-placeholder');
+                    }
+                    const inspectorPanel = document.querySelector('.room-inspector-panel');
+                    if (inspectorPanel) {
+                        inspectorPanel.classList.remove('calendar-active');
+                    }
                 }
             }
+        });
+    }
+
+    // Toggle calendar popup
+    const checkinCol = document.getElementById('checkinCol');
+    const checkoutCol = document.getElementById('checkoutCol');
+    const inlineCalendarContainer = document.getElementById('inlineCalendarContainer');
+
+    if (checkinCol && checkoutCol && inlineCalendarContainer) {
+        const toggleCalendar = (e) => {
+            e.stopPropagation();
+            const isHidden = inlineCalendarContainer.classList.toggle('hidden');
+            const inspectorPanel = document.querySelector('.room-inspector-panel');
+            if (inspectorPanel) {
+                if (isHidden) {
+                    inspectorPanel.classList.remove('calendar-active');
+                } else {
+                    inspectorPanel.classList.add('calendar-active');
+                }
+            }
+        };
+        checkinCol.addEventListener('click', toggleCalendar);
+        checkoutCol.addEventListener('click', toggleCalendar);
+        
+        // Prevent closing when clicking inside the calendar itself
+        inlineCalendarContainer.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+        
+        // Close calendar when clicking anywhere else
+        document.addEventListener('click', () => {
+            inlineCalendarContainer.classList.add('hidden');
         });
     }
 
@@ -560,6 +634,25 @@ document.addEventListener('DOMContentLoaded', () => {
         selectedCheckoutVal = "";
         if (btnGoToStep2) btnGoToStep2.disabled = true;
         if (dateRecapText) dateRecapText.innerText = "Дати ще не обрано";
+
+        const checkinInputPlaceholder = document.getElementById('checkinPlaceholder');
+        const checkoutInputPlaceholder = document.getElementById('checkoutPlaceholder');
+        if (checkinInputPlaceholder) {
+            checkinInputPlaceholder.innerText = "22.05.2026";
+            checkinInputPlaceholder.classList.add('is-placeholder');
+        }
+        if (checkoutInputPlaceholder) {
+            checkoutInputPlaceholder.innerText = "28.05.2026";
+            checkoutInputPlaceholder.classList.add('is-placeholder');
+        }
+        const calendarContainerElem = document.getElementById('inlineCalendarContainer');
+        if (calendarContainerElem) {
+            calendarContainerElem.classList.add('hidden');
+        }
+        const inspectorPanel = document.querySelector('.room-inspector-panel');
+        if (inspectorPanel) {
+            inspectorPanel.classList.remove('calendar-active');
+        }
 
         const selectActiveRoom = () => {
             if (targetRoomName) {

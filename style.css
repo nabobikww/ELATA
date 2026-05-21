@@ -289,7 +289,9 @@ p {
 /* --- Premium Buttons --- */
 .btn-primary,
 .btn-secondary {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     padding: var(--btn-padding);
     border-radius: var(--radius-sm);
     text-decoration: none;
@@ -301,6 +303,7 @@ p {
     font-size: 0.95rem;
     text-transform: uppercase;
     letter-spacing: 0.18em;
+    text-indent: 0.18em;
     text-align: center;
     position: relative;
     overflow: hidden;
@@ -1897,17 +1900,17 @@ body.modal-open {
     max-width: 1000px !important;
     width: 92vw !important;
     max-height: 90vh !important;
-    overflow-y: auto !important;
+    overflow: hidden !important; /* Perfect static window */
 }
 
 .wizard-card {
-    padding: 3rem 2.5rem !important;
+    padding: 1.8rem 2.2rem !important; /* Sleek, reduced padding to fit perfectly */
 }
 
 .wizard-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1rem;
     border-bottom: 1px solid rgba(197, 168, 128, 0.15);
-    padding-bottom: 1rem;
+    padding-bottom: 0.6rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1975,7 +1978,7 @@ body.modal-open {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    max-height: 480px;
+    max-height: 380px;
     overflow-y: auto;
     padding-right: 0.5rem;
     scrollbar-width: thin;
@@ -2042,16 +2045,16 @@ body.modal-open {
     background: var(--clr-milk);
     border-radius: var(--radius-lg);
     border: 1px solid rgba(197, 168, 128, 0.12);
-    padding: 1.8rem;
+    padding: 1.2rem;
     box-shadow: var(--shadow-premium);
 }
 
 .inspector-image-wrap {
     position: relative;
-    height: 180px;
+    height: 140px;
     border-radius: var(--radius-md);
     overflow: hidden;
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.8rem;
 }
 
 .inspector-image-wrap img {
@@ -2075,7 +2078,7 @@ body.modal-open {
 }
 
 .inspector-info {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.8rem;
 }
 
 .inspector-title-row {
@@ -2107,9 +2110,10 @@ body.modal-open {
 
 /* Inline Calendar styling */
 .calendar-selection-panel {
-    margin-top: 1.5rem;
+    margin-top: 0.8rem;
     border-top: 1px solid rgba(197, 168, 128, 0.1);
-    padding-top: 1.5rem;
+    padding-top: 0.8rem;
+    position: relative;
 }
 
 .calendar-label {
@@ -2119,17 +2123,92 @@ body.modal-open {
     font-weight: 600;
     letter-spacing: 0.15em;
     color: var(--clr-gold-dark);
-    margin-bottom: 1rem;
+    margin-bottom: 0.6rem;
     text-transform: uppercase;
+}
+
+/* Premium Side-by-Side Date Inputs */
+.date-inputs-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 0.6rem;
+}
+
+.date-input-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.date-input-label {
+    font-size: 0.68rem;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    color: var(--clr-champagne);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.date-input-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--clr-alabaster);
+    border: 1px solid rgba(197, 168, 128, 0.2);
+    padding: 0.5rem 0.8rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-smooth);
+    height: 42px;
+}
+
+.date-input-col:hover .date-input-box {
+    border-color: var(--clr-champagne);
+    background: var(--clr-milk);
+    box-shadow: 0 4px 12px rgba(197, 168, 128, 0.08);
+}
+
+.date-placeholder-val {
+    font-size: 0.95rem;
+    font-family: 'Outfit', sans-serif;
+    color: var(--clr-obsidian);
+    font-weight: 500;
+    transition: var(--transition-smooth);
+}
+
+.date-placeholder-val.is-placeholder {
+    color: rgba(28, 30, 32, 0.35); /* Elegant light gray for example dates */
+    font-weight: 400;
+}
+
+.calendar-input-icon {
+    width: 16px;
+    height: 16px;
+    color: var(--clr-champagne);
+    opacity: 0.7;
+    transition: var(--transition-smooth);
+}
+
+.date-input-col:hover .calendar-input-icon {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 .inline-calendar-wrapper {
     display: flex;
     justify-content: center;
     background: var(--clr-alabaster);
-    padding: 1rem;
+    padding: 0.5rem;
     border-radius: var(--radius-md);
-    border: 1px solid rgba(197, 168, 128, 0.1);
+    border: 1px solid rgba(197, 168, 128, 0.25);
+    box-shadow: 0 10px 30px rgba(28, 30, 32, 0.08);
+    margin-bottom: 0.6rem;
+    transition: all 0.3s ease;
+}
+
+.inline-calendar-wrapper.hidden {
+    display: none !important;
 }
 
 /* Inline Calendar Override */
@@ -2142,10 +2221,10 @@ body.modal-open {
 }
 
 .date-recap {
-    margin-top: 1.2rem;
+    margin-top: 0.6rem;
     text-align: center;
     background: var(--bg-secondary);
-    padding: 0.8rem;
+    padding: 0.5rem;
     border-radius: var(--radius-sm);
     border: 1px solid rgba(197, 168, 128, 0.08);
 }
@@ -2157,13 +2236,14 @@ body.modal-open {
 }
 
 .inspector-actions {
-    margin-top: 1.5rem;
+    margin-top: 0.8rem;
     display: flex;
     justify-content: flex-end;
 }
 
 .inspector-actions button {
-    width: 180px;
+    width: 220px;
+    padding: 1.1rem 0 !important;
 }
 
 /* Step 2 Form Styling */
@@ -2607,20 +2687,21 @@ body.modal-open {
     .booking-wizard-container {
         width: 96vw !important;
         max-height: 95vh !important;
+        overflow: hidden !important; /* Perfect static window: no scroll */
     }
     
     .wizard-card {
-        padding: 1.8rem 1.2rem !important;
+        padding: 1rem 0.8rem !important; /* Extremely compact to avoid scrolling */
     }
 
     .wizard-header {
-        margin-bottom: 1.2rem;
+        margin-bottom: 0.6rem;
     }
 
     .wizard-steps-indicator {
         width: 100%;
-        margin-top: 0.5rem;
-        gap: 1rem;
+        margin-top: 0.4rem;
+        gap: 0.8rem;
         justify-content: space-between;
     }
 
@@ -2630,7 +2711,7 @@ body.modal-open {
 
     .room-selector-layout {
         grid-template-columns: 1fr !important;
-        gap: 1.5rem;
+        gap: 1rem;
     }
 
     .rooms-mini-list {
@@ -2638,9 +2719,9 @@ body.modal-open {
         flex-direction: row !important;
         overflow-x: auto !important;
         scroll-snap-type: x mandatory !important;
-        gap: 1rem !important;
+        gap: 0.8rem !important;
         max-height: none !important;
-        padding-bottom: 0.8rem;
+        padding-bottom: 0.5rem;
         scrollbar-width: none;
     }
 
@@ -2651,42 +2732,81 @@ body.modal-open {
     .room-mini-card {
         flex: 0 0 75% !important;
         scroll-snap-align: center !important;
+        padding: 0.5rem !important;
     }
 
     .room-inspector-panel {
-        padding: 1rem !important;
+        padding: 0.6rem !important;
+    }
+
+    /* Dynamically hide details when calendar is open on mobile to keep everything perfectly static and fit */
+    .room-inspector-panel.calendar-active .inspector-details {
+        display: none !important;
     }
 
     .inspector-image-wrap {
-        height: 150px;
+        height: 95px;
+        margin-bottom: 0.5rem;
     }
 
     .inspector-title-row h3 {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
     }
 
     .inspector-price-tag {
-        font-size: 1rem;
+        font-size: 0.95rem;
     }
 
     .inline-calendar-wrapper {
-        padding: 0.5rem;
+        padding: 0.4rem;
+        margin-bottom: 0.4rem;
+    }
+
+    /* Make Flatpickr extremely compact on mobile */
+    .flatpickr-calendar {
+        width: 270px !important;
+        font-size: 0.8rem !important;
+    }
+    .flatpickr-days {
+        width: 270px !important;
+    }
+    .dayContainer {
+        width: 270px !important;
+        min-width: 270px !important;
+        max-width: 270px !important;
+    }
+    .flatpickr-day {
+        max-width: 35px !important;
+        height: 28px !important;
+        line-height: 28px !important;
+        font-size: 0.78rem !important;
     }
 
     .inspector-actions button {
         width: 100%;
+        padding: 0.9rem 0 !important; /* Perfectly proportioned for mobile */
     }
 
     .booking-wizard-step2-grid {
         grid-template-columns: 1fr !important;
-        gap: 1.5rem;
+        gap: 1rem;
     }
 
     .guests-split-row {
-        gap: 1rem !important;
+        gap: 0.8rem !important;
     }
 
     .booking-summary-recap {
-        padding: 1.2rem !important;
+        padding: 0.8rem !important;
+        margin-top: 0.5rem;
+    }
+    
+    .recap-room-card img {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .wizard-actions-step2 {
+        margin-top: 1rem !important;
     }
 }

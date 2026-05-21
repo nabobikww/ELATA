@@ -591,7 +591,26 @@
 
                             <div class="calendar-selection-panel">
                                 <label class="calendar-label">ОБЕРІТЬ ДАТИ ВІДПОЧИНКУ НА КАЛЕНДАРІ</label>
-                                <div id="inlineCalendarContainer" class="inline-calendar-wrapper"></div>
+                                
+                                <div class="date-inputs-row">
+                                    <div class="date-input-col" id="checkinCol">
+                                        <span class="date-input-label">Дата заїзду</span>
+                                        <div class="date-input-box">
+                                            <span class="date-placeholder-val is-placeholder" id="checkinPlaceholder">22.05.2026</span>
+                                            <svg class="calendar-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                        </div>
+                                    </div>
+                                    <div class="date-input-col" id="checkoutCol">
+                                        <span class="date-input-label">Дата виїзду</span>
+                                        <div class="date-input-box">
+                                            <span class="date-placeholder-val is-placeholder" id="checkoutPlaceholder">28.05.2026</span>
+                                            <svg class="calendar-input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="inlineCalendarContainer" class="inline-calendar-wrapper hidden"></div>
+                                
                                 <div class="date-recap">
                                     <span class="date-recap-text" id="dateRecapText">Дати ще не обрано</span>
                                 </div>
