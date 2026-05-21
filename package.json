@@ -1,0 +1,10 @@
+{
+  "name": "elata-apart",
+  "version": "1.0.0",
+  "description": "Elata Apart Skhidnytsia - Luxury redesign with unified serverless database synchronization",
+  "main": "script.js",
+  "scripts": {
+    "start": "echo 'No start script needed, Vercel serves static files and serverless functions natively'"
+  },
+  "dependencies": {}
+}
