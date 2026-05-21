@@ -1,7 +1,43 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Fetch blocked dates from localStorage
+    // Secure Cloud Database Integration (JSONBin-zeta)
+    const DB_URL = 'https://jsonbin-zeta.vercel.app/api/bins/LaH3DFwkrP';
+    let dbData = { bookings: [], blocked_dates: [] };
+
+    // Fetch latest bookings and blocked dates from the cloud database
+    async function loadDbData() {
+        try {
+            const res = await fetch(DB_URL);
+            if (res.ok) {
+                const json = await res.json();
+                if (json && json.data) {
+                    dbData = json.data;
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load cloud database data", e);
+        }
+    }
+
+    // Save data back to the cloud database
+    async function saveDbData() {
+        try {
+            const res = await fetch(DB_URL, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(dbData)
+            });
+            return res.ok;
+        } catch (e) {
+            console.error("Failed to save data to cloud database", e);
+            return false;
+        }
+    }
+
+    // Fetch blocked dates from cloud database cache
     function getBlockedDates() {
-        return JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
+        return dbData.blocked_dates || [];
     }
 
     function isDateBlocked(dateStr, room) {
@@ -98,20 +134,20 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
 
             try {
-                // Отримуємо існуючі бронювання з localStorage
-                let existingBookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
+                // Fetch the absolute latest database state before adding the booking to prevent race conditions
+                await loadDbData();
                 
-                // Генеруємо випадковий ID
+                // Generates random ID
                 const newId = Math.floor(1000 + Math.random() * 9000).toString();
                 
-                // Форматуємо дати (з YYYY-MM-DD в DD.MM.YYYY)
+                // Date formatting (from YYYY-MM-DD to DD.MM.YYYY)
                 const formatDate = (dateString) => {
                     const d = new Date(dateString);
                     return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
                 };
                 const formattedDates = `${formatDate(checkin)} - ${formatDate(checkout)}`;
                 
-                // Створюємо об'єкт бронювання
+                // Create booking object
                 const newBooking = {
                     id: newId,
                     name: name,
@@ -122,21 +158,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     comment: 'Бронювання з головної сторінки'
                 };
                 
-                // Додаємо і зберігаємо
-                existingBookings.push(newBooking);
-                localStorage.setItem('elata_bookings_v2', JSON.stringify(existingBookings));
+                // Append and save to cloud database
+                dbData.bookings.push(newBooking);
+                const success = await saveDbData();
 
-                // Імітуємо затримку мережі
-                await new Promise(resolve => setTimeout(resolve, 600));
-
-                alert('Дякуємо! Ваше бронювання надіслано менеджеру. Дати будуть зарезервовані після підтвердження заявки.');
-                bookingForm.reset();
-                
-                // Закриваємо модалку
-                const bookingModal = document.getElementById('bookingModal');
-                if (bookingModal) {
-                    bookingModal.classList.remove('active');
-                    document.body.classList.remove('modal-open');
+                if (success) {
+                    alert('Дякуємо! Ваше бронювання надіслано менеджеру. Дати будуть зарезервовані після підтвердження заявки.');
+                    bookingForm.reset();
+                    
+                    // Close modal
+                    const bookingModal = document.getElementById('bookingModal');
+                    if (bookingModal) {
+                        bookingModal.classList.remove('active');
+                        document.body.classList.remove('modal-open');
+                    }
+                } else {
+                    throw new Error("Save operation returned false status");
                 }
             } catch (err) {
                 console.error(err);
@@ -214,8 +251,10 @@ document.addEventListener('DOMContentLoaded', () => {
             fpCheckout = flatpickr(checkoutElem, fpConfig);
         };
         
-        // Update initially
-        updateFlatpickr();
+        // Asynchronously load DB data, then update Flatpickr calendars
+        loadDbData().then(() => {
+            updateFlatpickr();
+        });
 
         // Update when room selection changes
         const roomSelect = document.getElementById('roomSelect');
@@ -227,7 +266,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const openModalBtns = document.querySelectorAll('.open-booking, .room-card');
         openModalBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                updateFlatpickr();
+                loadDbData().then(() => {
+                    updateFlatpickr();
+                });
             });
         });
     }
