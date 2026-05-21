@@ -133,10 +133,84 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Empty Data for Bookings
-    const defaultBookings = [];
+    // ---- Cloud Database Hybrid Sync ----
+    async function syncWithCloud() {
+        try {
+            const res = await fetch('/api/data');
+            if (!res.ok) throw new Error('API error');
+            const cloudData = await res.json();
+            
+            let localBookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
+            let localBlocked = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
+            
+            let cloudBookings = cloudData.bookings || [];
+            let cloudBlocked = cloudData.blocked_dates || [];
+            
+            // Merge bookings by unique ID
+            const bookingMap = new Map();
+            cloudBookings.forEach(b => {
+                if (b && b.id) bookingMap.set(b.id.toString(), b);
+            });
+            localBookings.forEach(b => {
+                if (b && b.id) bookingMap.set(b.id.toString(), b);
+            });
+            const mergedBookings = Array.from(bookingMap.values());
+            
+            // Merge blocked dates by unique start_end_room
+            const blockedMap = new Map();
+            cloudBlocked.forEach(r => {
+                if (r && r.start && r.end) {
+                    const key = `${r.start}_${r.end}_${r.room || 'Усі номери'}`;
+                    blockedMap.set(key, r);
+                }
+            });
+            localBlocked.forEach(r => {
+                if (r && r.start && r.end) {
+                    const key = `${r.start}_${r.end}_${r.room || 'Усі номери'}`;
+                    blockedMap.set(key, r);
+                }
+            });
+            const mergedBlocked = Array.from(blockedMap.values());
+            
+            // Update localStorage
+            localStorage.setItem('elata_bookings_v2', JSON.stringify(mergedBookings));
+            localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(mergedBlocked));
+            
+            // If merged arrays are larger than cloud arrays, sync back to cloud
+            if (mergedBookings.length !== cloudBookings.length || mergedBlocked.length !== cloudBlocked.length || cloudBookings.length === 0) {
+                await fetch('/api/data', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bookings: mergedBookings, blocked_dates: mergedBlocked })
+                });
+            }
+            
+            return { bookings: mergedBookings, blocked_dates: mergedBlocked };
+        } catch (e) {
+            console.warn("Cloud sync failed, using localStorage cache", e);
+            return {
+                bookings: JSON.parse(localStorage.getItem('elata_bookings_v2')) || [],
+                blocked_dates: JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || []
+            };
+        }
+    }
 
-    // Load from LocalStorage or use default
+    async function pushToCloud() {
+        try {
+            let bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
+            let blocked_dates = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
+            
+            await fetch('/api/data', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ bookings, blocked_dates })
+            });
+        } catch (e) {
+            console.error("Failed to push to cloud", e);
+        }
+    }
+
+    const defaultBookings = [];
     let bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || defaultBookings;
 
     const tableBody = document.getElementById('bookingsTableBody');
@@ -263,14 +337,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             localStorage.setItem('elata_bookings_v2', JSON.stringify(bookings));
+            pushToCloud();
             renderTable();
             closeModal();
         }
     });
 
     document.getElementById('refreshBtn').addEventListener('click', () => {
-        bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || defaultBookings;
-        renderTable();
+        syncWithCloud().then(data => {
+            bookings = data.bookings;
+            renderTable();
+        });
     });
 
     // Delete Booking Logic
@@ -299,6 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             bookings = bookings.filter(item => item.id !== currentEditId);
             localStorage.setItem('elata_bookings_v2', JSON.stringify(bookings));
+            pushToCloud();
             renderTable();
             closeModal();
         }
@@ -331,6 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function saveBlockedDates(dates) {
         localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(dates));
+        pushToCloud();
     }
 
     function renderBlockedDates() {
@@ -430,12 +509,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Auto Refresh every 10 seconds
+    // Auto Refresh every 10 seconds from cloud
     setInterval(() => {
-        bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
-        renderTable();
+        // Only refresh if modals are not active to prevent editing interference
+        if (!modal.classList.contains('active') && !datesModal.classList.contains('active') && !passwordsModal.classList.contains('active')) {
+            syncWithCloud().then(data => {
+                bookings = data.bookings;
+                renderTable();
+            });
+        }
     }, 10000);
 
-    // Initial render
-    renderTable();
+    // Initial render and sync
+    syncWithCloud().then(data => {
+        bookings = data.bookings;
+        renderTable();
+    });
 });
