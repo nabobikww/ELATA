@@ -820,7 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeImageModalBtn = document.getElementById('closeImageModal');
 
     // Style zoom-in cursor initially
-    document.querySelectorAll('.carousel-item img, .triple-card img, .split-image img').forEach(img => {
+    document.querySelectorAll('.carousel-item img, .triple-card img, .split-image img, .inspector-image-wrap img, .room-mini-card img, .recap-room-card img').forEach(img => {
         img.style.cursor = 'zoom-in';
     });
 
@@ -830,7 +830,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (targetImg && targetImg.tagName === 'IMG' && (
             targetImg.closest('.carousel-item') || 
             targetImg.closest('.triple-card') || 
-            targetImg.closest('.split-image')
+            targetImg.closest('.split-image') ||
+            targetImg.closest('.inspector-image-wrap') ||
+            targetImg.closest('.room-mini-card') ||
+            targetImg.closest('.recap-room-card')
         )) {
             if (lightboxImage && imageModal) {
                 lightboxImage.src = targetImg.src;

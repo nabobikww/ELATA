@@ -1714,6 +1714,10 @@ p {
     display: flex;
 }
 
+#imageModal {
+    z-index: 150000 !important;
+}
+
 .modal-overlay {
     position: absolute;
     top: 0;
@@ -1899,7 +1903,7 @@ body.modal-open {
 .booking-wizard-container {
     max-width: 1200px !important; /* Elegant wide luxury frame */
     width: 70vw !important; /* Occupies exactly 70% of the screen width */
-    max-height: 88vh !important;
+    max-height: 94vh !important; /* Expanded more top and bottom */
     overflow-y: auto !important; /* Allow scroll if needed on short viewports, hides scrollbar via webkit rules */
 }
 
@@ -2040,7 +2044,7 @@ body.modal-open {
 
 .inspector-image-wrap {
     position: relative;
-    height: 250px; /* Cinematic widescreen landscape ratio */
+    height: 310px; /* Cinematic taller widescreen landscape ratio (not squashed) */
     border-radius: var(--radius-md);
     overflow: hidden;
     margin-bottom: 0.8rem;
@@ -2438,7 +2442,7 @@ body.modal-open {
 /* --- Height-based scaling for smaller PC/laptop viewports --- */
 @media (min-width: 769px) and (max-height: 850px) {
     .booking-wizard-container {
-        max-height: 92vh !important;
+        max-height: 96vh !important;
     }
     
     .wizard-card {
@@ -2486,7 +2490,7 @@ body.modal-open {
     }
     
     .inspector-image-wrap {
-        height: 160px;
+        height: 220px;
         margin-bottom: 0.5rem;
     }
     
@@ -3100,7 +3104,7 @@ body.modal-open {
     }
 
     .inspector-image-wrap {
-        height: 110px !important; /* Extremely snug & elegant aspect ratio */
+        height: 160px !important; /* Beautiful taller aspect ratio (not squashed) */
         margin-bottom: 0.4rem !important;
         width: 100% !important;
         border-radius: var(--radius-md) !important;
