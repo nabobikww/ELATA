@@ -2736,27 +2736,34 @@ body.modal-open {
     /* Booking Wizard Mobile Layout */
     .booking-wizard-container {
         width: 96vw !important;
-        max-height: 95vh !important;
-        overflow: hidden !important; /* Perfect static window: no scroll */
+        max-height: 90vh !important;
+        overflow-y: auto !important; /* Allow scroll so that forms and buttons are fully reachable */
     }
     
     .wizard-card {
-        padding: 1rem 0.8rem !important; /* Extremely compact to avoid scrolling */
+        padding: 1.2rem 1rem !important; /* Premium luxury spacing */
     }
 
     .wizard-header {
-        margin-bottom: 0.6rem;
+        margin-bottom: 0.8rem;
+        border-bottom: 1px solid rgba(197, 168, 128, 0.12);
+        padding-bottom: 0.6rem;
+    }
+    
+    .wizard-header .booking-label {
+        font-size: 0.72rem !important;
+        letter-spacing: 0.15em !important;
     }
 
     .wizard-steps-indicator {
         width: 100%;
-        margin-top: 0.4rem;
-        gap: 0.8rem;
+        margin-top: 0.5rem;
+        gap: 0.6rem;
         justify-content: space-between;
     }
 
     .step-indicator {
-        font-size: 0.72rem;
+        font-size: 0.7rem !important;
     }
 
     .rooms-mini-list-container {
@@ -2784,13 +2791,39 @@ body.modal-open {
     }
 
     .room-mini-card {
-        flex: 0 0 75% !important;
-        scroll-snap-align: center !important;
-        padding: 0.5rem !important;
+        flex: 0 0 80% !important;
+        scroll-snap-align: start !important;
+        padding: 0.6rem !important;
+        border: 1px solid rgba(197, 168, 128, 0.12) !important;
+        background: var(--clr-milk) !important;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02) !important;
+    }
+
+    .room-mini-card.active {
+        border-color: var(--clr-champagne) !important;
+        background: var(--bg-secondary) !important;
+        box-shadow: 0 6px 15px rgba(197, 168, 128, 0.1) !important;
+    }
+
+    .room-mini-card img {
+        width: 60px !important;
+        height: 60px !important;
+        border-radius: 6px !important;
+    }
+
+    .room-mini-info h4 {
+        font-size: 0.95rem !important;
+        margin-bottom: 2px !important;
+    }
+
+    .room-mini-price {
+        font-size: 0.78rem !important;
     }
 
     .room-inspector-panel {
-        padding: 0.6rem !important;
+        padding: 0.8rem !important;
+        border-radius: var(--radius-md) !important;
+        background: var(--clr-milk) !important;
     }
 
     /* Dynamically hide details when calendar is open on mobile to keep everything perfectly static and fit */
@@ -2799,16 +2832,76 @@ body.modal-open {
     }
 
     .inspector-image-wrap {
-        height: 165px;
-        margin-bottom: 0.5rem;
+        height: 155px !important;
+        margin-bottom: 0.6rem !important;
+    }
+
+    .inspector-title-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.2rem !important;
     }
 
     .inspector-title-row h3 {
-        font-size: 1.2rem;
+        font-size: 1.2rem !important;
+        margin-bottom: 0 !important;
     }
 
     .inspector-price-tag {
-        font-size: 0.95rem;
+        font-size: 0.92rem !important;
+    }
+
+    #inspectorDesc {
+        font-size: 0.8rem !important;
+        line-height: 1.4 !important;
+        margin-top: 0.4rem !important;
+    }
+
+    .calendar-selection-panel {
+        margin-top: 0.6rem !important;
+        padding-top: 0.6rem !important;
+    }
+
+    .calendar-label {
+        font-size: 0.64rem !important;
+        letter-spacing: 0.08em !important;
+        margin-bottom: 0.4rem !important;
+    }
+
+    .date-inputs-row {
+        gap: 0.5rem !important;
+        margin-bottom: 0.4rem !important;
+    }
+
+    .date-input-col {
+        gap: 0.3rem !important;
+    }
+
+    .date-input-label {
+        font-size: 0.62rem !important;
+    }
+
+    .date-input-box {
+        height: 38px !important;
+        padding: 0.3rem 0.5rem !important;
+    }
+
+    .date-placeholder-val {
+        font-size: 0.82rem !important;
+    }
+
+    .calendar-input-icon {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    .date-recap {
+        margin-top: 0.4rem !important;
+        padding: 0.4rem !important;
+    }
+
+    .date-recap-text {
+        font-size: 0.85rem !important;
     }
 
     .inline-calendar-wrapper {
@@ -2841,26 +2934,94 @@ body.modal-open {
         padding: 0.9rem 0 !important; /* Perfectly proportioned for mobile */
     }
 
+    /* Step 2 Form Styles on Mobile */
+    .booking-form .form-group {
+        margin-bottom: 0.8rem !important;
+        gap: 0.4rem !important;
+    }
+
+    .booking-form label {
+        font-size: 0.68rem !important;
+        letter-spacing: 0.06em !important;
+    }
+
+    .booking-form input,
+    .booking-form select {
+        padding: 0.75rem 0.9rem !important;
+        font-size: 0.9rem !important;
+        height: 44px !important;
+    }
+
     .booking-wizard-step2-grid {
         grid-template-columns: 1fr !important;
         gap: 1rem;
     }
 
     .guests-split-row {
-        gap: 0.8rem !important;
+        gap: 0.6rem !important;
     }
 
     .booking-summary-recap {
-        padding: 0.8rem !important;
-        margin-top: 0.5rem;
+        padding: 1rem !important;
+        margin-top: 0.6rem !important;
+        border-radius: var(--radius-md) !important;
+    }
+
+    .booking-summary-recap h4 {
+        font-size: 1.1rem !important;
+        margin-bottom: 0.8rem !important;
+        padding-bottom: 0.4rem !important;
+    }
+
+    .recap-room-card {
+        margin-bottom: 1rem !important;
+        gap: 0.8rem !important;
     }
     
     .recap-room-card img {
-        width: 50px !important;
-        height: 50px !important;
+        width: 60px !important;
+        height: 45px !important;
+        border-radius: 6px !important;
+    }
+
+    .recap-room-details h5 {
+        font-size: 0.95rem !important;
+    }
+
+    #recapRoomPrice {
+        font-size: 0.78rem !important;
+    }
+
+    .recap-info-list {
+        gap: 0.5rem !important;
+    }
+
+    .recap-info-item {
+        font-size: 0.82rem !important;
+    }
+
+    .recap-total-row {
+        padding-top: 0.6rem !important;
+        margin-top: 0.3rem !important;
+    }
+
+    .recap-total-row .recap-info-label {
+        font-size: 0.9rem !important;
+    }
+
+    .recap-total-row strong {
+        font-size: 1.05rem !important;
     }
     
     .wizard-actions-step2 {
-        margin-top: 1rem !important;
+        margin-top: 1.2rem !important;
+        padding-top: 1rem !important;
+        gap: 0.8rem !important;
+    }
+
+    .wizard-actions-step2 button {
+        min-width: 100px !important;
+        padding: 0.85rem 0 !important;
+        font-size: 0.85rem !important;
     }
 }
