@@ -146,6 +146,14 @@ document.addEventListener('DOMContentLoaded', () => {
             let cloudBookings = cloudData.bookings || [];
             let cloudBlocked = cloudData.blocked_dates || [];
             
+            // Read tombstones (deleted booking IDs)
+            const deletedIds = JSON.parse(localStorage.getItem('elata_deleted_bookings')) || [];
+            const deletedSet = new Set(deletedIds.map(id => id.toString()));
+            
+            // Filter out deleted bookings from both sources
+            cloudBookings = cloudBookings.filter(b => b && b.id && !deletedSet.has(b.id.toString()));
+            localBookings = localBookings.filter(b => b && b.id && !deletedSet.has(b.id.toString()));
+            
             // Merge bookings by unique ID
             const bookingMap = new Map();
             cloudBookings.forEach(b => {
@@ -176,13 +184,22 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('elata_bookings_v2', JSON.stringify(mergedBookings));
             localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(mergedBlocked));
             
-            // If merged arrays are larger than cloud arrays, sync back to cloud
-            if (mergedBookings.length !== cloudBookings.length || mergedBlocked.length !== cloudBlocked.length || cloudBookings.length === 0) {
-                await fetch('/api/data', {
+            // If merged arrays are different from cloud arrays, sync back to cloud
+            const rawCloudBookingsLength = (cloudData.bookings || []).length;
+            const rawCloudBlockedLength = (cloudData.blocked_dates || []).length;
+            if (mergedBookings.length !== rawCloudBookingsLength || mergedBlocked.length !== rawCloudBlockedLength || rawCloudBookingsLength === 0) {
+                const putRes = await fetch('/api/data', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ bookings: mergedBookings, blocked_dates: mergedBlocked })
                 });
+                if (putRes.ok) {
+                    // Successfully synced, clear tombstones
+                    localStorage.setItem('elata_deleted_bookings', JSON.stringify([]));
+                }
+            } else {
+                // No differences, we can clear tombstones safely
+                localStorage.setItem('elata_deleted_bookings', JSON.stringify([]));
             }
             
             return { bookings: mergedBookings, blocked_dates: mergedBlocked };
@@ -194,17 +211,21 @@ document.addEventListener('DOMContentLoaded', () => {
             };
         }
     }
-
     async function pushToCloud() {
         try {
             let bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
             let blocked_dates = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
             
-            await fetch('/api/data', {
+            const res = await fetch('/api/data', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ bookings, blocked_dates })
             });
+            
+            if (res.ok) {
+                // Successfully written to cloud, clear the local tombstones list
+                localStorage.setItem('elata_deleted_bookings', JSON.stringify([]));
+            }
         } catch (e) {
             console.error("Failed to push to cloud", e);
         }
@@ -372,6 +393,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveBlockedDates(ranges);
                     if (typeof renderBlockedDates === 'function') renderBlockedDates();
                 }
+            }
+
+            // Add to tombstones list in localStorage
+            let deletedIds = JSON.parse(localStorage.getItem('elata_deleted_bookings')) || [];
+            if (!deletedIds.includes(currentEditId.toString())) {
+                deletedIds.push(currentEditId.toString());
+                localStorage.setItem('elata_deleted_bookings', JSON.stringify(deletedIds));
             }
 
             bookings = bookings.filter(item => item.id !== currentEditId);

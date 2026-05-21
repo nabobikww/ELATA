@@ -6,50 +6,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!res.ok) throw new Error('API error');
             const cloudData = await res.json();
             
-            let localBookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
-            let localBlocked = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
+            const cloudBookings = cloudData.bookings || [];
+            const cloudBlocked = cloudData.blocked_dates || [];
             
-            let cloudBookings = cloudData.bookings || [];
-            let cloudBlocked = cloudData.blocked_dates || [];
-            
-            // Merge bookings by unique ID
-            const bookingMap = new Map();
-            cloudBookings.forEach(b => {
-                if (b && b.id) bookingMap.set(b.id.toString(), b);
-            });
-            localBookings.forEach(b => {
-                if (b && b.id) bookingMap.set(b.id.toString(), b);
-            });
-            const mergedBookings = Array.from(bookingMap.values());
-            
-            // Merge blocked dates by unique start_end_room
-            const blockedMap = new Map();
-            cloudBlocked.forEach(r => {
-                if (r && r.start && r.end) {
-                    const key = `${r.start}_${r.end}_${r.room || 'Усі номери'}`;
-                    blockedMap.set(key, r);
-                }
-            });
-            localBlocked.forEach(r => {
-                if (r && r.start && r.end) {
-                    const key = `${r.start}_${r.end}_${r.room || 'Усі номери'}`;
-                    blockedMap.set(key, r);
-                }
-            });
-            const mergedBlocked = Array.from(blockedMap.values());
-            
-            // Update localStorage
-            localStorage.setItem('elata_bookings_v2', JSON.stringify(mergedBookings));
-            localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(mergedBlocked));
-            
-            // If merged arrays are larger than cloud arrays, sync back to cloud
-            if (mergedBookings.length !== cloudBookings.length || mergedBlocked.length !== cloudBlocked.length || cloudBookings.length === 0) {
-                await fetch('/api/data', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bookings: mergedBookings, blocked_dates: mergedBlocked })
-                });
-            }
+            // Directly overwrite local cache with cloud truth to prevent client resurrection
+            localStorage.setItem('elata_bookings_v2', JSON.stringify(cloudBookings));
+            localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(cloudBlocked));
         } catch (e) {
             console.warn("Cloud sync failed, using localStorage cache", e);
         }
