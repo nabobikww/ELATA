@@ -764,6 +764,7 @@ p {
     object-fit: cover;
     border-radius: 0;
     transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: zoom-in;
 }
 
 .room-card:hover img {
@@ -1903,7 +1904,7 @@ body.modal-open {
 .booking-wizard-container {
     max-width: 1200px !important; /* Elegant wide luxury frame */
     width: 70vw !important; /* Occupies exactly 70% of the screen width */
-    max-height: 94vh !important; /* Expanded more top and bottom */
+    max-height: 97vh !important; /* Expanded more top and bottom */
     overflow-y: auto !important; /* Allow scroll if needed on short viewports, hides scrollbar via webkit rules */
 }
 
@@ -2044,7 +2045,7 @@ body.modal-open {
 
 .inspector-image-wrap {
     position: relative;
-    height: 310px; /* Cinematic taller widescreen landscape ratio (not squashed) */
+    height: 380px; /* Cinematic taller widescreen landscape ratio (not squashed) */
     border-radius: var(--radius-md);
     overflow: hidden;
     margin-bottom: 0.8rem;
@@ -2053,7 +2054,8 @@ body.modal-open {
 .inspector-image-wrap img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: cover !important;
+    object-position: center !important;
 }
 
 .inspector-capacity-badge {
@@ -2442,7 +2444,7 @@ body.modal-open {
 /* --- Height-based scaling for smaller PC/laptop viewports --- */
 @media (min-width: 769px) and (max-height: 850px) {
     .booking-wizard-container {
-        max-height: 96vh !important;
+        max-height: 98vh !important;
     }
     
     .wizard-card {
@@ -2490,12 +2492,15 @@ body.modal-open {
     }
     
     .inspector-image-wrap {
-        height: 220px;
+        height: 280px;
         margin-bottom: 0.5rem;
     }
     
     .inspector-image-wrap img {
-        height: 100%;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+        object-position: center !important;
     }
     
     .inspector-info {
@@ -2966,7 +2971,7 @@ body.modal-open {
     .booking-wizard-container {
         max-width: 380px !important; /* Extremely snug, premium mobile overlay card */
         width: 92vw !important;
-        max-height: 85vh !important;
+        max-height: 94vh !important;
         overflow-y: auto !important; /* Allow scroll so that forms and buttons are fully reachable */
         border-radius: var(--radius-lg) !important;
         margin: auto !important;
@@ -3104,7 +3109,7 @@ body.modal-open {
     }
 
     .inspector-image-wrap {
-        height: 160px !important; /* Beautiful taller aspect ratio (not squashed) */
+        height: 200px !important; /* Beautiful taller aspect ratio (not squashed) */
         margin-bottom: 0.4rem !important;
         width: 100% !important;
         border-radius: var(--radius-md) !important;
@@ -3115,6 +3120,7 @@ body.modal-open {
         width: 100% !important;
         height: 100% !important;
         object-fit: cover !important; /* NEVER SQUASH OR STRETCH */
+        object-position: center !important;
     }
 
     .inspector-title-row {

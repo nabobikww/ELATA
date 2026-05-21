@@ -787,6 +787,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     openModalBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
+            // If the user clicked on the room image, let the lightbox handle it instead of booking modal
+            if (e.target.closest('.room-card-image-wrap')) {
+                return;
+            }
             e.preventDefault();
             
             // Check if clicked element or its parent is a room-card
@@ -820,7 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeImageModalBtn = document.getElementById('closeImageModal');
 
     // Style zoom-in cursor initially
-    document.querySelectorAll('.carousel-item img, .triple-card img, .split-image img, .inspector-image-wrap img, .room-mini-card img, .recap-room-card img').forEach(img => {
+    document.querySelectorAll('.carousel-item img, .triple-card img, .split-image img, .inspector-image-wrap img, .room-mini-card img, .recap-room-card img, .room-card-image-wrap img').forEach(img => {
         img.style.cursor = 'zoom-in';
     });
 
@@ -833,7 +837,8 @@ document.addEventListener('DOMContentLoaded', () => {
             targetImg.closest('.split-image') ||
             targetImg.closest('.inspector-image-wrap') ||
             targetImg.closest('.room-mini-card') ||
-            targetImg.closest('.recap-room-card')
+            targetImg.closest('.recap-room-card') ||
+            targetImg.closest('.room-card-image-wrap')
         )) {
             if (lightboxImage && imageModal) {
                 lightboxImage.src = targetImg.src;
