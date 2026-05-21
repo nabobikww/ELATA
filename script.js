@@ -1,23 +1,42 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Fetch blocked dates
-    let blockedDatesArray = [];
-    fetch('/api/blocked-dates')
-        .then(res => res.json())
-        .then(data => {
-            blockedDatesArray = data;
-        })
-        .catch(err => console.error('Error fetching blocked dates:', err));
-
-    function isDateBlocked(dateStr) {
-        return blockedDatesArray.includes(dateStr);
+    // Fetch blocked dates from localStorage
+    function getBlockedDates() {
+        return JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
     }
 
-    function checkDatesRange(startStr, endStr) {
+    function isDateBlocked(dateStr, room) {
+        let blockedRanges = getBlockedDates();
+        
+        blockedRanges = blockedRanges.filter(range => {
+            if (!range) return false;
+            if (!range.room) return true;
+            if (range.room === 'Усі номери') return true;
+            if (room && range.room === room) return true;
+            return false;
+        });
+
+        const checkDate = new Date(dateStr);
+        checkDate.setHours(0, 0, 0, 0);
+        return blockedRanges.some(range => {
+            if (typeof range === 'string') {
+                const legacyDate = new Date(range);
+                legacyDate.setHours(0, 0, 0, 0);
+                return checkDate.getTime() === legacyDate.getTime();
+            }
+            const start = new Date(range.start);
+            start.setHours(0, 0, 0, 0);
+            const end = new Date(range.end);
+            end.setHours(0, 0, 0, 0);
+            return checkDate >= start && checkDate <= end;
+        });
+    }
+
+    function checkDatesRange(startStr, endStr, room) {
         const start = new Date(startStr);
         const end = new Date(endStr);
         for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
             const dateStr = d.toISOString().split('T')[0];
-            if (isDateBlocked(dateStr)) {
+            if (isDateBlocked(dateStr, room)) {
                 return dateStr;
             }
         }
@@ -52,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const checkin = document.getElementById('checkin').value;
             const checkout = document.getElementById('checkout').value;
             const guests = document.getElementById('guests').value;
+            const room = document.getElementById('roomSelect').value;
             
             // Phone validation
             const digitsOnly = phone.replace(/[^\d]/g, '');
@@ -65,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const blockedInBetween = checkDatesRange(checkin, checkout);
+            const blockedInBetween = checkDatesRange(checkin, checkout, room);
             if (blockedInBetween) {
                 alert(`На жаль, період бронювання включає заброньовану дату: ${blockedInBetween}. Будь ласка, оберіть інші дати.`);
                 return;
@@ -78,32 +98,49 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.disabled = true;
 
             try {
-                const response = await fetch('/api/booking', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        name,
-                        phone,
-                        checkin,
-                        checkout,
-                        guests
-                    })
-                });
+                // Отримуємо існуючі бронювання з localStorage
+                let existingBookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
+                
+                // Генеруємо випадковий ID
+                const newId = Math.floor(1000 + Math.random() * 9000).toString();
+                
+                // Форматуємо дати (з YYYY-MM-DD в DD.MM.YYYY)
+                const formatDate = (dateString) => {
+                    const d = new Date(dateString);
+                    return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
+                };
+                const formattedDates = `${formatDate(checkin)} - ${formatDate(checkout)}`;
+                
+                // Створюємо об'єкт бронювання
+                const newBooking = {
+                    id: newId,
+                    name: name,
+                    phone: phone,
+                    room: `${room} (${guests} ос.)`,
+                    dates: formattedDates,
+                    status: 'Нове',
+                    comment: 'Бронювання з головної сторінки'
+                };
+                
+                // Додаємо і зберігаємо
+                existingBookings.push(newBooking);
+                localStorage.setItem('elata_bookings_v2', JSON.stringify(existingBookings));
 
-                if (response.ok) {
-                    alert('Дякуємо! Ваше бронювання надіслано менеджеру. Ми зв\'яжемося з вами найближчим часом.');
-                    bookingForm.reset();
-                    // Close modal if it's open
-                    if (typeof closeModal === 'function') closeModal();
-                } else {
-                    const error = await response.json();
-                    alert('Помилка: ' + (error.error || 'Не вдалося надіслати запит.'));
+                // Імітуємо затримку мережі
+                await new Promise(resolve => setTimeout(resolve, 600));
+
+                alert('Дякуємо! Ваше бронювання надіслано менеджеру. Дати будуть зарезервовані після підтвердження заявки.');
+                bookingForm.reset();
+                
+                // Закриваємо модалку
+                const bookingModal = document.getElementById('bookingModal');
+                if (bookingModal) {
+                    bookingModal.classList.remove('active');
+                    document.body.classList.remove('modal-open');
                 }
             } catch (err) {
                 console.error(err);
-                alert('Помилка з\'єднання з сервером. Спробуйте пізніше або зателефонуйте нам.');
+                alert('Сталася помилка при збереженні бронювання. Спробуйте пізніше.');
             } finally {
                 btn.innerText = originalText;
                 btn.style.opacity = '1';
@@ -112,47 +149,89 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Set minimum date for checkin/checkout to today
+    // Initialize Flatpickr for checkin/checkout to visually block dates
     const checkinElem = document.getElementById('checkin');
     const checkoutElem = document.getElementById('checkout');
-    if (checkinElem && checkoutElem) {
-        const today = new Date().toISOString().split('T')[0];
-        checkinElem.setAttribute('min', today);
-        checkoutElem.setAttribute('min', today);
-
-        const validateDate = (e) => {
-            if (e.target.value && isDateBlocked(e.target.value)) {
-                alert(`На жаль, на дату ${e.target.value} немає вільних місць.`);
-                e.target.value = '';
-            } else if (checkinElem.value && checkoutElem.value) {
-                const blockedInBetween = checkDatesRange(checkinElem.value, checkoutElem.value);
-                if (blockedInBetween) {
-                    alert(`На жаль, період бронювання включає заброньовану дату: ${blockedInBetween}. Будь ласка, оберіть інші дати.`);
-                    e.target.value = '';
-                }
-            }
-        };
-
-        checkinElem.addEventListener('change', validateDate);
-        checkoutElem.addEventListener('change', validateDate);
-    }
-    // 3. Gallery Show More Button
-    const showMoreBtn = document.getElementById('showMoreBtn');
-    const hiddenGallery = document.getElementById('hiddenGallery');
     
-    if (showMoreBtn && hiddenGallery) {
-        showMoreBtn.addEventListener('click', () => {
-            if (hiddenGallery.style.display === 'none') {
-                hiddenGallery.style.display = 'block'; // Or whatever layout you use, here it falls back to block which masonry handles, wait, masonry-grid is a class using column-count, so block is fine
-                showMoreBtn.innerText = 'Сховати фотографії';
-            } else {
-                hiddenGallery.style.display = 'none';
-                showMoreBtn.innerText = 'Більше фотографій...';
-                // Scroll back to top of gallery
-                document.getElementById('gallery').scrollIntoView({ behavior: 'smooth' });
-            }
+    if (checkinElem && checkoutElem && typeof flatpickr !== 'undefined') {
+        let fpCheckin = null;
+        let fpCheckout = null;
+
+        const updateFlatpickr = () => {
+            const selectedRoom = document.getElementById('roomSelect') ? document.getElementById('roomSelect').value : '';
+            
+            const allRanges = getBlockedDates();
+            const relevantRanges = allRanges.filter(range => {
+                if (!range) return false;
+                if (!range.room) return true; // Legacy dates without room
+                if (range.room === 'Усі номери') return true; // Blocked globally
+                if (selectedRoom && range.room === selectedRoom) return true; // Blocked for this specific room
+                return false;
+            });
+            
+            const blockedRanges = relevantRanges.map(range => {
+                if (typeof range === 'string') {
+                    return range;
+                }
+                return {
+                    from: range.start,
+                    to: range.end
+                };
+            });
+
+            const fpConfig = {
+                minDate: "today",
+                disable: blockedRanges,
+                dateFormat: "Y-m-d",
+                locale: "uk",
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const checkDate = new Date(dayElem.dateObj);
+                    checkDate.setHours(0, 0, 0, 0);
+                    
+                    const isBlocked = blockedRanges.some(range => {
+                        if (typeof range === 'string') {
+                            const legacyDate = new Date(range);
+                            legacyDate.setHours(0, 0, 0, 0);
+                            return checkDate.getTime() === legacyDate.getTime();
+                        }
+                        const start = new Date(range.from);
+                        start.setHours(0, 0, 0, 0);
+                        const end = new Date(range.to);
+                        end.setHours(0, 0, 0, 0);
+                        return checkDate >= start && checkDate <= end;
+                    });
+                    
+                    if (isBlocked) {
+                        dayElem.classList.add('custom-blocked-date');
+                    }
+                }
+            };
+            
+            if (fpCheckin) fpCheckin.destroy();
+            if (fpCheckout) fpCheckout.destroy();
+
+            fpCheckin = flatpickr(checkinElem, fpConfig);
+            fpCheckout = flatpickr(checkoutElem, fpConfig);
+        };
+        
+        // Update initially
+        updateFlatpickr();
+
+        // Update when room selection changes
+        const roomSelect = document.getElementById('roomSelect');
+        if (roomSelect) {
+            roomSelect.addEventListener('change', updateFlatpickr);
+        }
+
+        // Also update whenever modal is opened
+        const openModalBtns = document.querySelectorAll('.open-booking, .room-card');
+        openModalBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                updateFlatpickr();
+            });
         });
     }
+
     // 4. Floating Contact Button
     const contactBtn = document.getElementById('contactBtn');
     const contactPopup = document.getElementById('contactPopup');
@@ -258,15 +337,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageModal = document.getElementById('imageModal');
     const lightboxImage = document.getElementById('lightboxImage');
     const closeImageModalBtn = document.getElementById('closeImageModal');
-    const galleryImages = document.querySelectorAll('.masonry-item img');
 
-    galleryImages.forEach(img => {
+    // Style zoom-in cursor initially
+    document.querySelectorAll('.carousel-item img, .triple-card img, .split-image img').forEach(img => {
         img.style.cursor = 'zoom-in';
-        img.addEventListener('click', () => {
-            lightboxImage.src = img.src;
-            imageModal.classList.add('active');
-            document.body.classList.add('modal-open');
-        });
+    });
+
+    // Delegate click event globally to support dynamic and cloned carousel elements!
+    document.addEventListener('click', (e) => {
+        const targetImg = e.target;
+        if (targetImg && targetImg.tagName === 'IMG' && (
+            targetImg.closest('.carousel-item') || 
+            targetImg.closest('.triple-card') || 
+            targetImg.closest('.split-image')
+        )) {
+            if (lightboxImage && imageModal) {
+                lightboxImage.src = targetImg.src;
+                imageModal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
     });
 
     if (closeImageModalBtn) {
@@ -377,6 +467,174 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+    }
+
+    // ==========================================
+    // CAROUSEL LOGIC (Infinite Loop Redesign!)
+    // ==========================================
+    const carousel = document.getElementById('photoCarousel');
+    if (carousel) {
+        const originalItems = Array.from(carousel.querySelectorAll('.carousel-item'));
+        const originalCount = originalItems.length;
+
+        if (originalCount > 0) {
+            // 1. Dynamic Cloning to make it infinite
+            // Clone all items and append them to the end
+            originalItems.forEach(item => {
+                const clone = item.cloneNode(true);
+                clone.classList.add('is-clone');
+                carousel.appendChild(clone);
+            });
+
+            // Clone all items and prepend them to the start (maintaining correct order)
+            originalItems.slice().reverse().forEach(item => {
+                const clone = item.cloneNode(true);
+                clone.classList.add('is-clone');
+                carousel.insertBefore(clone, carousel.firstChild);
+            });
+
+            // Retrieve updated list of items including all clones
+            const cItems = carousel.querySelectorAll('.carousel-item');
+            const prevBtn = document.querySelector('.prev-btn');
+            const nextBtn = document.querySelector('.next-btn');
+
+            // Helper to get real responsive item widths and gap settings
+            const getMetrics = () => {
+                const itemWidth = originalItems[0].offsetWidth || 640;
+                const gap = parseInt(window.getComputedStyle(carousel).gap || 24);
+                const stepWidth = itemWidth + gap;
+                const totalOriginalWidth = stepWidth * originalCount;
+                return { stepWidth, totalOriginalWidth };
+            };
+
+            // Set initial position (center group of original slides)
+            const initPosition = () => {
+                const { totalOriginalWidth } = getMetrics();
+                carousel.style.scrollBehavior = 'auto';
+                carousel.style.scrollSnapType = 'none';
+                carousel.scrollLeft = totalOriginalWidth;
+                carousel.offsetHeight; // force layout reflow
+                carousel.style.scrollBehavior = '';
+                carousel.style.scrollSnapType = '';
+            };
+
+            // Calculate and assign active and adjacent classes for elite focus/blur animations
+            const updateActiveItem = () => {
+                const carouselCenter = carousel.getBoundingClientRect().left + carousel.offsetWidth / 2;
+                let closestIndex = 0;
+                let minDistance = Infinity;
+
+                cItems.forEach((item, index) => {
+                    const rect = item.getBoundingClientRect();
+                    const itemCenter = rect.left + rect.width / 2;
+                    const distance = Math.abs(carouselCenter - itemCenter);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestIndex = index;
+                    }
+                });
+
+                cItems.forEach((item, index) => {
+                    item.classList.remove('is-active', 'is-adjacent');
+                    if (index === closestIndex) {
+                        item.classList.add('is-active');
+                    } else if (index === closestIndex - 1 || index === closestIndex + 1) {
+                        item.classList.add('is-adjacent');
+                    }
+                });
+            };
+
+            // Infinite loop-around boundary checker
+            const handleInfiniteScroll = () => {
+                const { totalOriginalWidth } = getMetrics();
+                
+                // If scrolled too close to the start (into prepended clones)
+                if (carousel.scrollLeft < totalOriginalWidth * 0.5) {
+                    carousel.style.scrollBehavior = 'auto';
+                    carousel.style.scrollSnapType = 'none';
+                    carousel.scrollLeft += totalOriginalWidth;
+                    carousel.offsetHeight; // force layout reflow
+                    carousel.style.scrollBehavior = '';
+                    carousel.style.scrollSnapType = '';
+                }
+                // If scrolled too close to the end (into appended clones)
+                else if (carousel.scrollLeft >= totalOriginalWidth * 1.5) {
+                    carousel.style.scrollBehavior = 'auto';
+                    carousel.style.scrollSnapType = 'none';
+                    carousel.scrollLeft -= totalOriginalWidth;
+                    carousel.offsetHeight; // force layout reflow
+                    carousel.style.scrollBehavior = '';
+                    carousel.style.scrollSnapType = '';
+                }
+                
+                updateActiveItem();
+            };
+
+            // Run check on scroll
+            carousel.addEventListener('scroll', handleInfiniteScroll);
+
+            // Double delay initial positioning for robust layout rendering
+            setTimeout(() => {
+                initPosition();
+                updateActiveItem();
+            }, 50);
+
+            window.addEventListener('load', () => {
+                initPosition();
+                updateActiveItem();
+            });
+
+            // Navigation Buttons
+            if (prevBtn && nextBtn) {
+                prevBtn.addEventListener('click', () => {
+                    const { stepWidth } = getMetrics();
+                    carousel.scrollBy({ left: -stepWidth, behavior: 'smooth' });
+                });
+                nextBtn.addEventListener('click', () => {
+                    const { stepWidth } = getMetrics();
+                    carousel.scrollBy({ left: stepWidth, behavior: 'smooth' });
+                });
+            }
+
+            // Mouse Drag to Scroll
+            let isDown = false;
+            let startX;
+            let scrollLeft;
+
+            carousel.addEventListener('mousedown', (e) => {
+                isDown = true;
+                carousel.classList.add('dragging');
+                startX = e.pageX - carousel.offsetLeft;
+                scrollLeft = carousel.scrollLeft;
+            });
+            
+            carousel.addEventListener('mouseleave', () => {
+                isDown = false;
+                carousel.classList.remove('dragging');
+            });
+            
+            carousel.addEventListener('mouseup', () => {
+                isDown = false;
+                carousel.classList.remove('dragging');
+            });
+            
+            carousel.addEventListener('mousemove', (e) => {
+                if (!isDown) return;
+                e.preventDefault();
+                const x = e.pageX - carousel.offsetLeft;
+                const walk = (x - startX) * 2.5; // Drag scroll rate
+                carousel.scrollLeft = scrollLeft - walk;
+            });
+
+            // Handle window resizing
+            window.addEventListener('resize', () => {
+                const { totalOriginalWidth } = getMetrics();
+                if (carousel.scrollLeft < totalOriginalWidth * 0.5 || carousel.scrollLeft >= totalOriginalWidth * 1.5) {
+                    carousel.scrollLeft = totalOriginalWidth;
+                }
+            });
+        }
     }
 
     // Initial check

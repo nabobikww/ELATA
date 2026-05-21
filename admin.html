@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elata Apart | Admin Panel</title>
+    
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="admin.css">
+    <link rel="icon" type="image/jpeg" href="ELATA LOGO.JPG">
+</head>
+<body>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" style="position: fixed; inset: 0; background: var(--bg-primary); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 350px;">
+            <h2 style="margin-top: 0; margin-bottom: 1.5rem; text-align: center;">Вхід в систему</h2>
+            <div class="form-group">
+                <label>Логін</label>
+                <input type="text" id="loginInput" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="Введіть логін">
+            </div>
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Пароль</label>
+                <input type="password" id="passwordInput" style="width: 100%; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 4px;" placeholder="Введіть пароль">
+            </div>
+            <button class="btn-primary" id="loginBtn" style="width: 100%; margin-top: 1.5rem;">Увійти</button>
+        </div>
+    </div>
+
+    <!-- Main Admin App -->
+    <div id="adminApp" style="display: none; width: 100%; min-height: 100vh;">
+        <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="admin-logo">Elata<span>Admin</span></h2>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Бронювання
+            </a>
+
+            <a href="#" class="nav-item" id="manageDatesBtnSidebar">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                Закриті дати
+            </a>
+            <a href="#" class="nav-item" id="passwordsBtnSidebar" style="display: none;">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                Паролі
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-search">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                <input type="text" placeholder="Пошук за ім'ям або номером...">
+            </div>
+            <div class="topbar-user">
+                <span class="manager-name" id="currentUserName">Менеджер</span>
+                <button class="btn-outline btn-sm" id="logoutBtn" style="padding: 0.2rem 0.6rem; margin-left: 0.5rem;">Вийти</button>
+            </div>
+        </header>
+
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <div>
+                    <h1>Всі бронювання</h1>
+                    <p class="subtitle">Керуйте заявками від клієнтів</p>
+                </div>
+                <div>
+                    <button class="btn-primary" id="refreshBtn">Оновити дані</button>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <h3>Нових заявок</h3>
+                    <div class="stat-value text-blue" id="statNew">3</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Підтверджено</h3>
+                    <div class="stat-value text-green" id="statConfirmed">12</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Всього бронювань</h3>
+                    <div class="stat-value" id="statTotal">15</div>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Гість</th>
+                            <th>Контакти</th>
+                            <th>Номер</th>
+                            <th>Дати</th>
+                            <th>Статус</th>
+                            <th>Дії</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookingsTableBody">
+                        <!-- Rows will be populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Modal (Hidden by default) -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header" style="justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <button id="deleteBookingBtn" style="background: none; border: 1px solid #ff4d4f; color: #ff4d4f; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-family: inherit;">Видалити</button>
+                    <h2 style="margin: 0;">Деталі #<span id="modalId"></span></h2>
+                </div>
+                <button class="close-btn" id="closeModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Гість</label>
+                    <input type="text" id="modalName" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Телефон</label>
+                    <input type="text" id="modalPhone" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Номер</label>
+                    <input type="text" id="modalRoom" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Коментар гостя</label>
+                    <textarea id="modalComment" readonly rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Змінити статус</label>
+                    <select id="modalStatus">
+                        <option value="Нове">Нове</option>
+                        <option value="Підтверджено">Підтверджено</option>
+                        <option value="Відхилено">Відхилено</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline" id="cancelModal">Скасувати</button>
+                <button class="btn-primary" id="saveModal">Зберегти зміни</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blocked Dates Modal -->
+    <div class="modal" id="datesModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 style="margin: 0;">Закриті періоди</h2>
+                <button class="close-btn" id="closeDatesModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Додати період (від і до)</label>
+                    <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                        <select id="blockRoomSelect" style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid var(--border-color); font-family: inherit;">
+                            <option value="Усі номери">Усі номери</option>
+                            <option value="Двомісний номер">Двомісний номер</option>
+                            <option value="Бюджетний двомісний номер">Бюджетний двомісний номер</option>
+                            <option value="Тримісний номер з терасою">Тримісний номер з терасою</option>
+                            <option value="Чотиримісний номер Делюкс">Чотиримісний номер Делюкс</option>
+                            <option value="Чотиримісний номер Преміум">Чотиримісний номер Преміум</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <input type="date" id="blockStartDate" style="flex: 1;">
+                        <span>-</span>
+                        <input type="date" id="blockEndDate" style="flex: 1;">
+                        <button class="btn-primary" id="addBlockDateBtn" style="padding: 0 1rem;">Закрити</button>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label>Список закритих періодів</label>
+                    <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 0.5rem;">
+                        <table class="admin-table" style="margin: 0; box-shadow: none;">
+                            <thead>
+                                <tr>
+                                    <th style="width: 35%;">Номер</th>
+                                    <th>Початок</th>
+                                    <th>Кінець</th>
+                                    <th style="width: 80px;">Дії</th>
+                                </tr>
+                            </thead>
+                            <tbody id="blockedDatesList">
+                                <!-- Dates will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    </div> <!-- End Admin App -->
+
+    <!-- Passwords Modal -->
+    <div class="modal" id="passwordsModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 style="margin: 0;">Керування менеджерами</h2>
+                <button class="close-btn" id="closePasswordsModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Додати нового користувача</label>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: stretch;">
+                        <input type="text" id="newLogin" placeholder="Логін" style="flex: 1; min-width: 150px;">
+                        <input type="text" id="newPassword" placeholder="Пароль" style="flex: 1; min-width: 150px;">
+                        <button class="btn-primary" id="addUserBtn" style="white-space: nowrap;">Створити</button>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-top: 1.5rem;">
+                    <label>Список користувачів</label>
+                    <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 0.5rem;">
+                        <table class="admin-table" style="margin: 0; box-shadow: none;">
+                            <thead>
+                                <tr>
+                                    <th>Логін</th>
+                                    <th>Пароль</th>
+                                    <th style="width: 80px;">Дії</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersList">
+                                <!-- Users populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
