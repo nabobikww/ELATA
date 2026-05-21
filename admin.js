@@ -191,34 +191,87 @@ document.addEventListener('DOMContentLoaded', () => {
             const res = await fetch('/api/data');
             if (!res.ok) throw new Error('API error');
             const cloudData = await res.json();
-            
-            let localBookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
-            let localBlocked = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
-            
+
             let cloudBookings = cloudData.bookings || [];
             let cloudBlocked = cloudData.blocked_dates || [];
-            
+
             // Read tombstones (deleted booking IDs)
             const deletedIds = JSON.parse(localStorage.getItem('elata_deleted_bookings')) || [];
             const deletedSet = new Set(deletedIds.map(id => id.toString()));
-            
-            // Filter out deleted bookings from both sources
-            cloudBookings = cloudBookings.filter(b => b && b.id && !deletedSet.has(b.id.toString()));
-            localBookings = localBookings.filter(b => b && b.id && !deletedSet.has(b.id.toString()));
-            
-            // Merge bookings by unique ID
-            const bookingMap = new Map();
-            cloudBookings.forEach(b => {
-                if (b && b.id) bookingMap.set(b.id.toString(), b);
-            });
+
+            if (deletedSet.size > 0) {
+                // Filter out tombstoned bookings from cloud data
+                const filteredBookings = cloudBookings.filter(b => b && b.id && !deletedSet.has(b.id.toString()));
+
+                // If we actually removed something, push the cleaned list back to cloud
+                if (filteredBookings.length < cloudBookings.length) {
+                    const putRes = await fetch('/api/data', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ bookings: filteredBookings, blocked_dates: cloudBlocked })
+                    });
+                    if (putRes.ok) {
+                        // Only clear tombstones AFTER successful cloud write
+                        localStorage.setItem('elata_deleted_bookings', JSON.stringify([]));
+                    }
+                    cloudBookings = filteredBookings;
+                } else {
+                    // Tombstones exist but nothing to remove (already deleted) — safe to clear
+                    localStorage.setItem('elata_deleted_bookings', JSON.stringify([]));
+                }
+            }
+
+            // Cloud is the single source of truth — overwrite local cache
+            localStorage.setItem('elata_bookings_v2', JSON.stringify(cloudBookings));
+            localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(cloudBlocked));
+
+            return { bookings: cloudBookings, blocked_dates: cloudBlocked };
+        } catch (e) {
+            console.warn("Cloud sync failed, using localStorage cache", e);
+            return {
+                bookings: JSON.parse(localStorage.getItem('elata_bookings_v2')) || [],
+                blocked_dates: JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || []
+            };
+        }
+    }
+
+    async function pushToCloud() {
+        try {
+            // Atomic: read fresh cloud state, apply local changes, write back
+            const getRes = await fetch('/api/data');
+            if (!getRes.ok) throw new Error('Failed to read cloud');
+            const cloudData = await getRes.json();
+
+            let bookings = cloudData.bookings || [];
+            let blocked_dates = cloudData.blocked_dates || [];
+
+            // Apply tombstones to ensure deleted items never come back
+            const deletedIds = JSON.parse(localStorage.getItem('elata_deleted_bookings')) || [];
+            const deletedSet = new Set(deletedIds.map(id => id.toString()));
+            if (deletedSet.size > 0) {
+                bookings = bookings.filter(b => b && b.id && !deletedSet.has(b.id.toString()));
+            }
+
+            // Apply local status changes (from the admin's in-memory bookings array)
+            const localBookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
+            const localMap = new Map();
             localBookings.forEach(b => {
-                if (b && b.id) bookingMap.set(b.id.toString(), b);
+                if (b && b.id) localMap.set(b.id.toString(), b);
             });
-            const mergedBookings = Array.from(bookingMap.values());
-            
-            // Merge blocked dates by unique start_end_room
+
+            // Update cloud bookings with any local status changes
+            bookings = bookings.map(b => {
+                if (b && b.id && localMap.has(b.id.toString())) {
+                    return localMap.get(b.id.toString());
+                }
+                return b;
+            });
+
+            // Also apply local blocked_dates
+            const localBlocked = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
+            // Merge: use local blocked dates as authoritative
             const blockedMap = new Map();
-            cloudBlocked.forEach(r => {
+            blocked_dates.forEach(r => {
                 if (r && r.start && r.end) {
                     const key = `${r.start}_${r.end}_${r.room || 'Усі номери'}`;
                     blockedMap.set(key, r);
@@ -230,53 +283,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     blockedMap.set(key, r);
                 }
             });
-            const mergedBlocked = Array.from(blockedMap.values());
-            
-            // Update localStorage
-            localStorage.setItem('elata_bookings_v2', JSON.stringify(mergedBookings));
-            localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(mergedBlocked));
-            
-            // If merged arrays are different from cloud arrays, sync back to cloud
-            const rawCloudBookingsLength = (cloudData.bookings || []).length;
-            const rawCloudBlockedLength = (cloudData.blocked_dates || []).length;
-            if (mergedBookings.length !== rawCloudBookingsLength || mergedBlocked.length !== rawCloudBlockedLength || rawCloudBookingsLength === 0) {
-                const putRes = await fetch('/api/data', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ bookings: mergedBookings, blocked_dates: mergedBlocked })
-                });
-                if (putRes.ok) {
-                    // Successfully synced, clear tombstones
-                    localStorage.setItem('elata_deleted_bookings', JSON.stringify([]));
-                }
-            } else {
-                // No differences, we can clear tombstones safely
-                localStorage.setItem('elata_deleted_bookings', JSON.stringify([]));
-            }
-            
-            return { bookings: mergedBookings, blocked_dates: mergedBlocked };
-        } catch (e) {
-            console.warn("Cloud sync failed, using localStorage cache", e);
-            return {
-                bookings: JSON.parse(localStorage.getItem('elata_bookings_v2')) || [],
-                blocked_dates: JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || []
-            };
-        }
-    }
-    async function pushToCloud() {
-        try {
-            let bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
-            let blocked_dates = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
-            
-            const res = await fetch('/api/data', {
+            blocked_dates = Array.from(blockedMap.values());
+
+            const putRes = await fetch('/api/data', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ bookings, blocked_dates })
             });
-            
-            if (res.ok) {
-                // Successfully written to cloud, clear the local tombstones list
+
+            if (putRes.ok) {
+                // Only clear tombstones AFTER successful cloud write
                 localStorage.setItem('elata_deleted_bookings', JSON.stringify([]));
+                // Sync local cache with what we just wrote
+                localStorage.setItem('elata_bookings_v2', JSON.stringify(bookings));
+                localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(blocked_dates));
             }
         } catch (e) {
             console.error("Failed to push to cloud", e);

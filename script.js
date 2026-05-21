@@ -17,16 +17,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    async function pushToCloud() {
+    async function pushToCloud(newBooking) {
         try {
-            let bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
-            let blocked_dates = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
-            
+            // Atomic read-modify-write: fetch fresh cloud state, append new booking, write back
+            const getRes = await fetch('/api/data');
+            if (!getRes.ok) throw new Error('Failed to read cloud');
+            const cloudData = await getRes.json();
+
+            let bookings = cloudData.bookings || [];
+            let blocked_dates = cloudData.blocked_dates || [];
+
+            // Only append the new booking if it doesn't already exist in cloud
+            if (newBooking && newBooking.id) {
+                const exists = bookings.some(b => b && b.id && b.id.toString() === newBooking.id.toString());
+                if (!exists) {
+                    bookings.push(newBooking);
+                }
+            }
+
             await fetch('/api/data', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ bookings, blocked_dates })
             });
+
+            // Update local cache with the authoritative cloud state
+            localStorage.setItem('elata_bookings_v2', JSON.stringify(bookings));
+            localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(blocked_dates));
         } catch (e) {
             console.error("Failed to push to cloud", e);
         }
@@ -168,13 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     status: 'Нове',
                     comment: 'Бронювання з головної сторінки'
                 };
-                
-                // Додаємо і зберігаємо локально
-                existingBookings.push(newBooking);
-                localStorage.setItem('elata_bookings_v2', JSON.stringify(existingBookings));
 
-                // Відправляємо в хмару
-                await pushToCloud();
+                // Атомарно додаємо нове бронювання в хмару (pushToCloud оновить і локальний кеш)
+                await pushToCloud(newBooking);
 
                 alert('Дякуємо! Ваше бронювання надіслано менеджеру. Дати будуть зарезервовані після підтвердження заявки.');
                 bookingForm.reset();
