@@ -518,6 +518,8 @@
     <!-- Booking Modal -->
     <div id="bookingModal" class="modal">
         <div class="modal-overlay"></div>
+        <div id="calendarOverlay" class="calendar-overlay"></div>
+        <div id="inlineCalendarContainer" class="inline-calendar-wrapper hidden"></div>
         <div class="modal-container booking-wizard-container">
             <div class="booking-card wizard-card">
                 <button class="modal-close" id="closeModal">×</button>
@@ -534,42 +536,47 @@
                 <!-- Step 1: Room & Calendar Selector -->
                 <div class="wizard-step active" id="bookingStep1">
                     <div class="room-selector-layout">
-                        <!-- Mini Rooms List -->
-                        <div class="rooms-mini-list">
-                            <div class="room-mini-card active" data-room-val="Двомісний номер" data-room-price="880" data-room-image="DSC08330.JPG" data-room-desc="Затишний номер з великим ліжком, власною ванною та телевізором." data-room-capacity="1–2 особи">
-                                <img src="DSC08330.JPG" alt="Двомісний номер">
-                                <div class="room-mini-info">
-                                    <h4>Двомісний номер</h4>
-                                    <span class="room-mini-price">від 880 грн / ніч</span>
+                        <!-- Mini Rooms List Container -->
+                        <div class="rooms-mini-list-container">
+                            <div class="rooms-mini-list">
+                                <div class="room-mini-card active" data-room-val="Двомісний номер" data-room-price="880" data-room-image="DSC08330.JPG" data-room-desc="Затишний номер з великим ліжком, власною ванною та телевізором." data-room-capacity="1–2 особи">
+                                    <img src="DSC08330.JPG" alt="Двомісний номер">
+                                    <div class="room-mini-info">
+                                        <h4>Двомісний номер</h4>
+                                        <span class="room-mini-price">від 880 грн / ніч</span>
+                                    </div>
+                                </div>
+                                <div class="room-mini-card" data-room-val="Бюджетний двомісний номер" data-room-price="820" data-room-image="DSC08330.JPG" data-room-desc="Компактний та зручний варіант для економного відпочинку." data-room-capacity="1–2 особи">
+                                    <img src="DSC08330.JPG" alt="Бюджетний двомісний номер">
+                                    <div class="room-mini-info">
+                                        <h4>Бюджетний номер</h4>
+                                        <span class="room-mini-price">від 820 грн / ніч</span>
+                                    </div>
+                                </div>
+                                <div class="room-mini-card" data-room-val="Тримісний номер з терасою" data-room-price="1330" data-room-image="DSC08472.JPG" data-room-desc="Ексклюзивний номер із власною терасою та панорамним видом на гори." data-room-capacity="2–3 особи">
+                                    <img src="DSC08472.JPG" alt="Тримісний номер з терасою">
+                                    <div class="room-mini-info">
+                                        <h4>Тримісний з терасою</h4>
+                                        <span class="room-mini-price">від 1 330 грн / ніч</span>
+                                    </div>
+                                </div>
+                                <div class="room-mini-card" data-room-val="Чотиримісний номер Делюкс" data-room-price="1260" data-room-image="DSC08414.JPG" data-room-desc="Просторий номер для родини або компанії з покращеним плануванням." data-room-capacity="2–4 особи">
+                                    <img src="DSC08414.JPG" alt="Чотиримісний номер Делюкс">
+                                    <div class="room-mini-info">
+                                        <h4>Чотиримісний Делюкс</h4>
+                                        <span class="room-mini-price">від 1 260 грн / ніч</span>
+                                    </div>
+                                </div>
+                                <div class="room-mini-card" data-room-val="Чотиримісний номер Преміум" data-room-price="1330" data-room-image="DSC08414.JPG" data-room-desc="Високий рівень комфорту та стильний інтер'єр для великої родини." data-room-capacity="2–4 особи">
+                                    <img src="DSC08414.JPG" alt="Чотиримісний номер Преміум">
+                                    <div class="room-mini-info">
+                                        <h4>Чотиримісний Преміум</h4>
+                                        <span class="room-mini-price">від 1 330 грн / ніч</span>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="room-mini-card" data-room-val="Бюджетний двомісний номер" data-room-price="820" data-room-image="DSC08330.JPG" data-room-desc="Компактний та зручний варіант для економного відпочинку." data-room-capacity="1–2 особи">
-                                <img src="DSC08330.JPG" alt="Бюджетний двомісний номер">
-                                <div class="room-mini-info">
-                                    <h4>Бюджетний номер</h4>
-                                    <span class="room-mini-price">від 820 грн / ніч</span>
-                                </div>
-                            </div>
-                            <div class="room-mini-card" data-room-val="Тримісний номер з терасою" data-room-price="1330" data-room-image="DSC08472.JPG" data-room-desc="Ексклюзивний номер із власною терасою та панорамним видом на гори." data-room-capacity="2–3 особи">
-                                <img src="DSC08472.JPG" alt="Тримісний номер з терасою">
-                                <div class="room-mini-info">
-                                    <h4>Тримісний з терасою</h4>
-                                    <span class="room-mini-price">від 1 330 грн / ніч</span>
-                                </div>
-                            </div>
-                            <div class="room-mini-card" data-room-val="Чотиримісний номер Делюкс" data-room-price="1260" data-room-image="DSC08414.JPG" data-room-desc="Просторий номер для родини або компанії з покращеним плануванням." data-room-capacity="2–4 особи">
-                                <img src="DSC08414.JPG" alt="Чотиримісний номер Делюкс">
-                                <div class="room-mini-info">
-                                    <h4>Чотиримісний Делюкс</h4>
-                                    <span class="room-mini-price">від 1 260 грн / ніч</span>
-                                </div>
-                            </div>
-                            <div class="room-mini-card" data-room-val="Чотиримісний номер Преміум" data-room-price="1330" data-room-image="DSC08414.JPG" data-room-desc="Високий рівень комфорту та стильний інтер'єр для великої родини." data-room-capacity="2–4 особи">
-                                <img src="DSC08414.JPG" alt="Чотиримісний номер Преміум">
-                                <div class="room-mini-info">
-                                    <h4>Чотиримісний Преміум</h4>
-                                    <span class="room-mini-price">від 1 330 грн / ніч</span>
-                                </div>
+                            <div class="rooms-mini-list-actions">
+                                <button type="button" class="btn-primary" id="btnGoToStep2Left" disabled>Продовжити</button>
                             </div>
                         </div>
 
@@ -608,8 +615,6 @@
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <div id="inlineCalendarContainer" class="inline-calendar-wrapper hidden"></div>
                                 
                                 <div class="date-recap">
                                     <span class="date-recap-text" id="dateRecapText">Дати ще не обрано</span>

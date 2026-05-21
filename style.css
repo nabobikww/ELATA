@@ -2195,19 +2195,88 @@ body.modal-open {
     transform: scale(1.1);
 }
 
+/* --- Centered Calendar Popup and Overlay styles --- */
+.calendar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(17, 20, 22, 0.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 109999;
+    display: none;
+}
+
+.calendar-overlay.active {
+    display: block !important;
+}
+
 .inline-calendar-wrapper {
-    display: flex;
-    justify-content: center;
-    background: var(--clr-alabaster);
-    padding: 0.5rem;
-    border-radius: var(--radius-md);
-    border: 1px solid rgba(197, 168, 128, 0.25);
-    box-shadow: 0 10px 30px rgba(28, 30, 32, 0.08);
-    margin-bottom: 0.6rem;
-    transition: all 0.3s ease;
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 110000 !important;
+    display: none !important;
+    background: var(--clr-milk) !important;
+    padding: 1.5rem !important;
+    border-radius: var(--radius-lg) !important;
+    border: 1px solid rgba(197, 168, 128, 0.3) !important;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3) !important;
+    animation: calendarAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.inline-calendar-wrapper:not(.hidden) {
+    display: flex !important;
 }
 
 .inline-calendar-wrapper.hidden {
+    display: none !important;
+}
+
+@keyframes calendarAppear {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -45%) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* --- Rooms Mini List Actions --- */
+.rooms-mini-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 320px;
+}
+
+.rooms-mini-list-actions {
+    display: flex;
+    width: 100%;
+}
+
+.rooms-mini-list-actions .btn-primary {
+    width: 100%;
+    padding: 0.9rem 1.8rem;
+}
+
+/* --- Disabled Button State Overrides --- */
+.btn-primary:disabled {
+    background: rgba(197, 168, 128, 0.15) !important;
+    color: rgba(28, 30, 32, 0.3) !important;
+    border: 1px solid rgba(197, 168, 128, 0.15) !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+    transform: none !important;
+    opacity: 0.7;
+}
+
+.btn-primary:disabled::before {
     display: none !important;
 }
 
@@ -2707,6 +2776,10 @@ body.modal-open {
 
     .step-indicator {
         font-size: 0.72rem;
+    }
+
+    .rooms-mini-list-container {
+        width: 100% !important;
     }
 
     .room-selector-layout {

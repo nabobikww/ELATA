@@ -251,12 +251,43 @@ document.addEventListener('DOMContentLoaded', () => {
     let fpInline = null;
 
     const btnGoToStep2 = document.getElementById('btnGoToStep2');
+    const btnGoToStep2Left = document.getElementById('btnGoToStep2Left');
     const btnBackToStep1 = document.getElementById('btnBackToStep1');
     const step1Panel = document.getElementById('bookingStep1');
     const step2Panel = document.getElementById('bookingStep2');
     const indicatorStep1 = document.getElementById('indicatorStep1');
     const indicatorStep2 = document.getElementById('indicatorStep2');
     const dateRecapText = document.getElementById('dateRecapText');
+
+    function setStep2ButtonsDisabled(disabled) {
+        if (btnGoToStep2) btnGoToStep2.disabled = disabled;
+        if (btnGoToStep2Left) btnGoToStep2Left.disabled = disabled;
+    }
+
+    // Toggle calendar popup overlay
+    function openCalendar() {
+        const calendarContainer = document.getElementById('inlineCalendarContainer');
+        const calendarOverlay = document.getElementById('calendarOverlay');
+        const inspectorPanel = document.querySelector('.room-inspector-panel');
+        
+        if (calendarContainer) calendarContainer.classList.remove('hidden');
+        if (calendarOverlay) calendarOverlay.classList.add('active');
+        if (inspectorPanel) inspectorPanel.classList.add('calendar-active');
+        
+        if (fpInline) {
+            fpInline.open();
+        }
+    }
+
+    function closeCalendar() {
+        const calendarContainer = document.getElementById('inlineCalendarContainer');
+        const calendarOverlay = document.getElementById('calendarOverlay');
+        const inspectorPanel = document.querySelector('.room-inspector-panel');
+        
+        if (calendarContainer) calendarContainer.classList.add('hidden');
+        if (calendarOverlay) calendarOverlay.classList.remove('active');
+        if (inspectorPanel) inspectorPanel.classList.remove('calendar-active');
+    }
 
     // Update Inline Calendar with active room blocked dates
     function updateInlineCalendar() {
@@ -335,14 +366,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         fpInline.clear();
                         selectedCheckinVal = "";
                         selectedCheckoutVal = "";
-                        btnGoToStep2.disabled = true;
+                        setStep2ButtonsDisabled(true);
                         dateRecapText.innerText = "Дати ще не обрано";
                         return;
                     }
 
                     selectedCheckinVal = startStr;
                     selectedCheckoutVal = endStr;
-                    btnGoToStep2.disabled = false;
+                    setStep2ButtonsDisabled(false);
 
                     // Format and populate columns
                     const formatDateText = (d) => {
@@ -360,16 +391,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
 
                     // Auto-hide calendar after selection
-                    const calendarContainer = document.getElementById('inlineCalendarContainer');
-                    if (calendarContainer) {
-                        setTimeout(() => {
-                            calendarContainer.classList.add('hidden');
-                            const inspectorPanel = document.querySelector('.room-inspector-panel');
-                            if (inspectorPanel) {
-                                inspectorPanel.classList.remove('calendar-active');
-                            }
-                        }, 400);
-                    }
+                    setTimeout(() => {
+                        closeCalendar();
+                    }, 400);
 
                     // Calculate nights
                     const diffTime = Math.abs(end - start);
@@ -396,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     selectedCheckinVal = "";
                     selectedCheckoutVal = "";
-                    btnGoToStep2.disabled = true;
+                    setStep2ButtonsDisabled(true);
                     dateRecapText.innerText = "Дати ще не обрано";
                     
                     const checkinInputElem = document.getElementById('checkinPlaceholder');
@@ -409,10 +433,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         checkoutInputElem.innerText = "28.05.2026";
                         checkoutInputElem.classList.add('is-placeholder');
                     }
-                    const inspectorPanel = document.querySelector('.room-inspector-panel');
-                    if (inspectorPanel) {
-                        inspectorPanel.classList.remove('calendar-active');
-                    }
+                    closeCalendar();
                 }
             }
         });
@@ -421,34 +442,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toggle calendar popup
     const checkinCol = document.getElementById('checkinCol');
     const checkoutCol = document.getElementById('checkoutCol');
+    const calendarOverlay = document.getElementById('calendarOverlay');
     const inlineCalendarContainer = document.getElementById('inlineCalendarContainer');
 
-    if (checkinCol && checkoutCol && inlineCalendarContainer) {
-        const toggleCalendar = (e) => {
+    if (checkinCol && checkoutCol) {
+        const onDateInputClick = (e) => {
             e.stopPropagation();
-            const isHidden = inlineCalendarContainer.classList.toggle('hidden');
-            const inspectorPanel = document.querySelector('.room-inspector-panel');
-            if (inspectorPanel) {
-                if (isHidden) {
-                    inspectorPanel.classList.remove('calendar-active');
-                } else {
-                    inspectorPanel.classList.add('calendar-active');
-                }
-            }
+            openCalendar();
         };
-        checkinCol.addEventListener('click', toggleCalendar);
-        checkoutCol.addEventListener('click', toggleCalendar);
-        
+        checkinCol.addEventListener('click', onDateInputClick);
+        checkoutCol.addEventListener('click', onDateInputClick);
+    }
+
+    if (calendarOverlay) {
+        calendarOverlay.addEventListener('click', (e) => {
+            e.stopPropagation();
+            closeCalendar();
+        });
+    }
+
+    if (inlineCalendarContainer) {
         // Prevent closing when clicking inside the calendar itself
         inlineCalendarContainer.addEventListener('click', (e) => {
             e.stopPropagation();
         });
-        
-        // Close calendar when clicking anywhere else
-        document.addEventListener('click', () => {
-            inlineCalendarContainer.classList.add('hidden');
-        });
     }
+
+    // Close calendar when clicking anywhere else
+    document.addEventListener('click', () => {
+        closeCalendar();
+    });
 
     // Connect Mini Card Clicks
     const roomMiniCards = document.querySelectorAll('.room-mini-card');
@@ -480,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Reset calendar values and dates selected on room change to prevent crossing bookings
             selectedCheckinVal = "";
             selectedCheckoutVal = "";
-            btnGoToStep2.disabled = true;
+            setStep2ButtonsDisabled(true);
             dateRecapText.innerText = "Дати ще не обрано";
 
             // Update calendar with new room parameters
@@ -489,18 +512,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Step navigation actions
+    const goToStep2 = () => {
+        if (selectedCheckinVal && selectedCheckoutVal) {
+            step1Panel.classList.remove('active');
+            step2Panel.classList.add('active');
+            indicatorStep1.classList.remove('active');
+            indicatorStep2.classList.add('active');
+            
+            // Force scroll top for modal card to ensure form fields are visible on mobile
+            const wizardContainer = document.querySelector('.booking-wizard-container');
+            if (wizardContainer) wizardContainer.scrollTop = 0;
+        }
+    };
+
     if (btnGoToStep2) {
-        btnGoToStep2.addEventListener('click', () => {
-            if (selectedCheckinVal && selectedCheckoutVal) {
-                step1Panel.classList.remove('active');
-                step2Panel.classList.add('active');
-                indicatorStep1.classList.remove('active');
-                indicatorStep2.classList.add('active');
-                
-                // Force scroll top for modal card to ensure form fields are visible on mobile
-                document.querySelector('.booking-wizard-container').scrollTop = 0;
-            }
-        });
+        btnGoToStep2.addEventListener('click', goToStep2);
+    }
+    if (btnGoToStep2Left) {
+        btnGoToStep2Left.addEventListener('click', goToStep2);
     }
 
     if (btnBackToStep1) {
@@ -632,7 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Always reset dates when opening the modal for pristine state
         selectedCheckinVal = "";
         selectedCheckoutVal = "";
-        if (btnGoToStep2) btnGoToStep2.disabled = true;
+        setStep2ButtonsDisabled(true);
         if (dateRecapText) dateRecapText.innerText = "Дати ще не обрано";
 
         const checkinInputPlaceholder = document.getElementById('checkinPlaceholder');
@@ -645,14 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
             checkoutInputPlaceholder.innerText = "28.05.2026";
             checkoutInputPlaceholder.classList.add('is-placeholder');
         }
-        const calendarContainerElem = document.getElementById('inlineCalendarContainer');
-        if (calendarContainerElem) {
-            calendarContainerElem.classList.add('hidden');
-        }
-        const inspectorPanel = document.querySelector('.room-inspector-panel');
-        if (inspectorPanel) {
-            inspectorPanel.classList.remove('calendar-active');
-        }
+        closeCalendar();
 
         const selectActiveRoom = () => {
             if (targetRoomName) {
