@@ -327,6 +327,34 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // 4.1 Mobile Hamburger Menu Toggle Logic
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileNavDropdown = document.getElementById('mobileNavDropdown');
+    
+    if (menuToggle && mobileNavDropdown) {
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            menuToggle.classList.toggle('active');
+            mobileNavDropdown.classList.toggle('active');
+        });
+
+        // Close menu when clicking a link
+        mobileNavDropdown.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                menuToggle.classList.remove('active');
+                mobileNavDropdown.classList.remove('active');
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!menuToggle.contains(e.target) && !mobileNavDropdown.contains(e.target)) {
+                menuToggle.classList.remove('active');
+                mobileNavDropdown.classList.remove('active');
+            }
+        });
+    }
+
     // 5. Advanced Scroll Effects
     const header = document.querySelector('.navbar');
 
@@ -334,6 +362,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentScroll = window.pageYOffset;
 
         if (!header) return;
+
+        // Skip shrinking on mobile viewports to prevent layout reflow / glitching
+        if (window.innerWidth <= 768) {
+            header.classList.remove('shrunk');
+            return;
+        }
 
         // Header shrinking
         if (currentScroll > 50) {
@@ -451,6 +485,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const animatedElements = document.querySelectorAll('.reveal, .room-card, .service-card, .split-content, .split-image');
     
     const handleScrollAnimations = () => {
+        if (window.innerWidth <= 768) {
+            // Disable heavy scroll-fade animations on mobile to prevent performance lag and layout glitches
+            animatedElements.forEach(el => {
+                el.style.opacity = '';
+                el.style.transform = '';
+            });
+            return;
+        }
         const viewportHeight = window.innerHeight;
         const fadeThreshold = 200; // Distance from top/bottom to start fading
 
