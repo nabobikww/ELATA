@@ -2509,6 +2509,10 @@ body.modal-open {
     }
 }
 
+.scroll-hint {
+    display: none;
+}
+
 @media (max-width: 768px) {
     :root {
         --h1-size: 2.6rem;
@@ -2823,14 +2827,34 @@ body.modal-open {
         display: none;
     }
 
+    .scroll-hint {
+        display: flex !important;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.64rem !important;
+        font-weight: 600;
+        color: var(--clr-champagne) !important;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.35rem !important;
+        text-transform: uppercase;
+        opacity: 0.85;
+        animation: pulseScrollHint 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseScrollHint {
+        0%, 100% { opacity: 0.65; transform: translateY(0); }
+        50% { opacity: 1; transform: translateY(-1px); }
+    }
+
     .room-mini-card {
-        flex: 0 0 78% !important; /* Perfect sweet spot for swiping */
+        flex: 0 0 68% !important; /* Narrower and prevents horizontal card overflow */
         scroll-snap-align: start !important;
-        padding: 0.5rem !important;
+        padding: 0.4rem 0.5rem !important;
         border: 1px solid rgba(197, 168, 128, 0.12) !important;
         background: var(--clr-milk) !important;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02) !important;
-        gap: 0.6rem !important;
+        gap: 0.5rem !important;
+        overflow: hidden !important; /* Avoid content spilling out */
     }
 
     .room-mini-card.active {
@@ -2840,14 +2864,24 @@ body.modal-open {
     }
 
     .room-mini-card img {
-        width: 50px !important;
-        height: 50px !important;
+        width: 42px !important;
+        height: 42px !important;
         border-radius: 6px !important;
+        object-fit: cover !important; /* NEVER SQUASH OR STRETCH */
+        flex-shrink: 0 !important;
+    }
+
+    .room-mini-info {
+        min-width: 0 !important;
+        flex: 1 !important;
     }
 
     .room-mini-info h4 {
-        font-size: 0.85rem !important;
+        font-size: 0.8rem !important;
         margin-bottom: 1px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
     }
 
     .room-mini-price {
@@ -2866,8 +2900,17 @@ body.modal-open {
     }
 
     .inspector-image-wrap {
-        height: 130px !important; /* Super snug, elegant landscape aspect ratio */
+        height: 110px !important; /* Extremely snug & elegant aspect ratio */
         margin-bottom: 0.4rem !important;
+        width: 100% !important;
+        border-radius: var(--radius-md) !important;
+        overflow: hidden !important;
+    }
+
+    .inspector-image-wrap img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important; /* NEVER SQUASH OR STRETCH */
     }
 
     .inspector-title-row {
@@ -2903,6 +2946,7 @@ body.modal-open {
     }
 
     .date-inputs-row {
+        grid-template-columns: 1fr !important; /* Stack vertically, one under the other */
         gap: 0.4rem !important;
         margin-bottom: 0.3rem !important;
     }
@@ -2963,10 +3007,16 @@ body.modal-open {
         font-size: 0.78rem !important;
     }
 
+    .inspector-actions {
+        display: flex !important;
+        justify-content: center !important; /* Center the narrow button */
+        margin-top: 0.4rem !important;
+    }
+
     .inspector-actions button {
-        width: 100%;
-        padding: 0.8rem 0 !important; /* Perfectly proportioned for mobile */
-        font-size: 0.85rem !important;
+        width: 140px !important; /* Narrow button */
+        padding: 0.65rem 0 !important; /* Compact vertical padding */
+        font-size: 0.82rem !important;
     }
 
     /* Step 2 Form Styles on Mobile */
