@@ -1897,42 +1897,42 @@ body.modal-open {
    ELITE 2-STEP BOOKING WIZARD STYLING
 ================================================== */
 .booking-wizard-container {
-    max-width: 1000px !important;
-    width: 92vw !important;
-    max-height: 90vh !important;
+    max-width: 760px !important;
+    width: 95vw !important;
+    max-height: 86vh !important;
     overflow: hidden !important; /* Perfect static window */
 }
 
 .wizard-card {
-    padding: 1.4rem 1.8rem !important; /* Sleek, reduced padding to fit perfectly */
+    padding: 1.1rem 1.4rem !important; /* Elegant compact padding */
 }
 
 .wizard-header {
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
     border-bottom: 1px solid rgba(197, 168, 128, 0.15);
-    padding-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.8rem;
 }
 
 .wizard-steps-indicator {
     display: flex;
-    gap: 1.5rem;
+    gap: 1.2rem;
 }
 
 .step-indicator {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-family: 'Montserrat', sans-serif;
     font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     color: var(--text-secondary);
     opacity: 0.5;
     position: relative;
-    padding-bottom: 4px;
+    padding-bottom: 3px;
     transition: var(--transition-smooth);
 }
 
@@ -1968,8 +1968,8 @@ body.modal-open {
 /* Step 1: Two Column Layout */
 .room-selector-layout {
     display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 2.5rem;
+    grid-template-columns: 260px 1fr;
+    gap: 1.2rem;
     align-items: start;
 }
 
@@ -1977,7 +1977,7 @@ body.modal-open {
 .rooms-mini-list {
     display: flex;
     flex-direction: column;
-    gap: 0.85rem;
+    gap: 0.55rem;
     max-height: none;
     overflow-y: visible;
     padding-right: 0;
@@ -1985,9 +1985,9 @@ body.modal-open {
 
 .room-mini-card {
     display: flex;
-    gap: 1rem;
+    gap: 0.6rem;
     background: var(--clr-milk);
-    padding: 0.65rem 0.8rem;
+    padding: 0.45rem 0.6rem;
     border-radius: var(--radius-md);
     border: 1px solid rgba(197, 168, 128, 0.12);
     cursor: pointer;
@@ -1996,37 +1996,37 @@ body.modal-open {
 }
 
 .room-mini-card img {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 6px;
     flex-shrink: 0;
 }
 
 .room-mini-info h4 {
-    font-size: 1.05rem;
+    font-size: 0.85rem;
     font-family: 'Playfair Display', serif;
     font-weight: 600;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     color: var(--clr-obsidian);
 }
 
 .room-mini-price {
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     color: var(--clr-champagne);
     font-weight: 500;
 }
 
 .room-mini-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(28, 30, 32, 0.05);
-    border-color: rgba(197, 168, 128, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(28, 30, 32, 0.04);
+    border-color: rgba(197, 168, 128, 0.3);
 }
 
 .room-mini-card.active {
     border-color: var(--clr-champagne);
     background: var(--bg-secondary);
-    box-shadow: 0 8px 20px rgba(197, 168, 128, 0.15);
+    box-shadow: 0 6px 15px rgba(197, 168, 128, 0.12);
 }
 
 /* Right Panel: Inspector */
@@ -2034,16 +2034,16 @@ body.modal-open {
     background: var(--clr-milk);
     border-radius: var(--radius-lg);
     border: 1px solid rgba(197, 168, 128, 0.12);
-    padding: 1rem;
+    padding: 0.8rem;
     box-shadow: var(--shadow-premium);
 }
 
 .inspector-image-wrap {
     position: relative;
-    height: 210px;
+    height: 130px; /* Snug, elegant landscape landscape ratio */
     border-radius: var(--radius-md);
     overflow: hidden;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
 }
 
 .inspector-image-wrap img {
@@ -2054,12 +2054,12 @@ body.modal-open {
 
 .inspector-capacity-badge {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 0.6rem;
+    right: 0.6rem;
     background: rgba(17, 20, 22, 0.8);
     color: var(--clr-milk);
-    padding: 0.4rem 0.8rem;
-    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.6rem;
     border-radius: 50px;
     font-weight: 600;
     font-family: 'Montserrat', sans-serif;
@@ -2067,52 +2067,52 @@ body.modal-open {
 }
 
 .inspector-info {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
 }
 
 .inspector-title-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.4rem;
 }
 
 .inspector-title-row h3 {
     margin-bottom: 0;
-    font-size: 1.6rem;
+    font-size: 1.15rem;
 }
 
 .inspector-price-tag {
-    font-size: 1.15rem;
+    font-size: 0.92rem;
     font-family: 'Outfit', sans-serif;
     color: var(--clr-champagne);
     font-weight: 500;
 }
 
 #inspectorDesc {
-    font-size: 0.95rem;
-    line-height: 1.6;
+    font-size: 0.8rem;
+    line-height: 1.4;
     color: var(--text-secondary);
 }
 
 /* Inline Calendar styling */
 .calendar-selection-panel {
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
     border-top: 1px solid rgba(197, 168, 128, 0.1);
-    padding-top: 0.5rem;
+    padding-top: 0.4rem;
     position: relative;
 }
 
 .calendar-label {
     display: block;
-    font-size: 0.72rem;
+    font-size: 0.65rem;
     font-family: 'Montserrat', sans-serif;
     font-weight: 600;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.1em;
     color: var(--clr-gold-dark);
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.3rem;
     text-transform: uppercase;
 }
 
@@ -2120,24 +2120,24 @@ body.modal-open {
 .date-inputs-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.6rem;
-    margin-bottom: 0.4rem;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
 }
 
 .date-input-col {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.25rem;
     cursor: pointer;
 }
 
 .date-input-label {
-    font-size: 0.68rem;
+    font-size: 0.6rem;
     font-family: 'Montserrat', sans-serif;
     font-weight: 600;
     color: var(--clr-champagne);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.05em;
 }
 
 .date-input-box {
@@ -2146,20 +2146,20 @@ body.modal-open {
     align-items: center;
     background: var(--clr-alabaster);
     border: 1px solid rgba(197, 168, 128, 0.2);
-    padding: 0.5rem 0.8rem;
+    padding: 0.3rem 0.6rem;
     border-radius: var(--radius-sm);
     transition: var(--transition-smooth);
-    height: 40px;
+    height: 35px;
 }
 
 .date-input-col:hover .date-input-box {
     border-color: var(--clr-champagne);
     background: var(--clr-milk);
-    box-shadow: 0 4px 12px rgba(197, 168, 128, 0.08);
+    box-shadow: 0 3px 8px rgba(197, 168, 128, 0.06);
 }
 
 .date-placeholder-val {
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     font-family: 'Outfit', sans-serif;
     color: var(--clr-obsidian);
     font-weight: 500;
@@ -2172,8 +2172,8 @@ body.modal-open {
 }
 
 .calendar-input-icon {
-    width: 16px;
-    height: 16px;
+    width: 13px;
+    height: 13px;
     color: var(--clr-champagne);
     opacity: 0.7;
     transition: var(--transition-smooth);
@@ -2181,7 +2181,7 @@ body.modal-open {
 
 .date-input-col:hover .calendar-input-icon {
     opacity: 1;
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 /* --- Centered Calendar Popup and Overlay styles --- */
@@ -2210,10 +2210,10 @@ body.modal-open {
     z-index: 110000 !important;
     display: none !important;
     background: var(--clr-milk) !important;
-    padding: 1.5rem !important;
+    padding: 1rem !important;
     border-radius: var(--radius-lg) !important;
     border: 1px solid rgba(197, 168, 128, 0.3) !important;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
     animation: calendarAppear 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -2240,8 +2240,8 @@ body.modal-open {
 .rooms-mini-list-container {
     display: flex;
     flex-direction: column;
-    gap: 1.2rem;
-    width: 320px;
+    gap: 0.6rem;
+    width: 260px;
 }
 
 /* Left action button container deleted */
@@ -2271,86 +2271,113 @@ body.modal-open {
 }
 
 .date-recap {
-    margin-top: 0.4rem;
+    margin-top: 0.3rem;
     text-align: center;
     background: var(--bg-secondary);
-    padding: 0.4rem;
+    padding: 0.3rem;
     border-radius: var(--radius-sm);
     border: 1px solid rgba(197, 168, 128, 0.08);
 }
 
 .date-recap-text {
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     font-weight: 500;
     color: var(--clr-obsidian);
 }
 
 .inspector-actions {
-    margin-top: 0.5rem;
+    margin-top: 0.4rem;
     display: flex;
     justify-content: flex-end;
 }
 
 .inspector-actions button {
-    width: 220px;
-    padding: 0.9rem 0 !important;
+    width: 100%;
+    padding: 0.7rem 0 !important;
+    font-size: 0.82rem !important;
 }
 
 /* Step 2 Form Styling */
 .booking-wizard-step2-grid {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 2.5rem;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 1.5rem;
     align-items: start;
-    margin-bottom: 2rem;
+    margin-bottom: 1.2rem;
 }
 
-.guests-split-row {
+.wizard-card .booking-form .form-group {
+    margin-bottom: 0.7rem;
+    gap: 0.3rem;
+}
+
+.wizard-card .booking-form label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--clr-obsidian);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.wizard-card .booking-form input,
+.wizard-card .booking-form select {
+    padding: 0.5rem 0.7rem;
+    border: 1px solid rgba(197, 168, 128, 0.3);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: var(--clr-alabaster);
+    color: var(--clr-obsidian);
+    transition: var(--transition-smooth);
+    height: 36px;
+}
+
+.wizard-card .guests-split-row {
     grid-template-columns: 1fr 1fr !important;
-    gap: 1.5rem !important;
+    gap: 0.6rem !important;
 }
 
 .booking-summary-recap {
     background: var(--bg-secondary);
     border-radius: var(--radius-lg);
     border: 1px solid rgba(197, 168, 128, 0.15);
-    padding: 1.8rem;
+    padding: 1rem;
     box-shadow: var(--shadow-premium);
 }
 
 .booking-summary-recap h4 {
     font-family: 'Playfair Display', serif;
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: var(--clr-obsidian);
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.8rem;
     border-bottom: 1px solid rgba(197, 168, 128, 0.1);
-    padding-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
 }
 
 .recap-room-card {
     display: flex;
-    gap: 1rem;
+    gap: 0.6rem;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.8rem;
 }
 
 .recap-room-card img {
-    width: 80px;
-    height: 60px;
+    width: 60px;
+    height: 45px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 6px;
 }
 
 .recap-room-details h5 {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-family: 'Playfair Display', serif;
     font-weight: 600;
     margin-bottom: 2px;
 }
 
 #recapRoomPrice {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     color: var(--clr-champagne);
     font-weight: 500;
 }
@@ -2358,13 +2385,13 @@ body.modal-open {
 .recap-info-list {
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 0.5rem;
 }
 
 .recap-info-item {
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
@@ -2375,18 +2402,18 @@ body.modal-open {
 
 .recap-total-row {
     border-top: 1px dashed rgba(197, 168, 128, 0.3);
-    padding-top: 0.8rem;
-    margin-top: 0.4rem;
+    padding-top: 0.5rem;
+    margin-top: 0.2rem;
 }
 
 .recap-total-row .recap-info-label {
-    font-size: 1.05rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--clr-obsidian);
 }
 
 .recap-total-row strong {
-    font-size: 1.25rem;
+    font-size: 1.05rem;
     color: var(--clr-champagne);
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
@@ -2396,11 +2423,14 @@ body.modal-open {
     display: flex;
     justify-content: space-between;
     border-top: 1px solid rgba(197, 168, 128, 0.12);
-    padding-top: 1.5rem;
+    padding-top: 0.8rem;
+    margin-top: 0.8rem;
 }
 
 .wizard-actions-step2 button {
-    min-width: 140px;
+    min-width: 100px;
+    padding: 0.65rem 1.2rem !important;
+    font-size: 0.8rem;
 }
 
 /* --- Massive Responsive Polish --- */
@@ -2735,8 +2765,8 @@ body.modal-open {
 
     /* Booking Wizard Mobile Layout */
     .booking-wizard-container {
-        max-width: 430px !important; /* Elegant snug boundary, never over-stretched */
-        width: 90vw !important;
+        max-width: 380px !important; /* Extremely snug, premium mobile overlay card */
+        width: 92vw !important;
         max-height: 85vh !important;
         overflow-y: auto !important; /* Allow scroll so that forms and buttons are fully reachable */
         border-radius: var(--radius-lg) !important;
@@ -2744,7 +2774,7 @@ body.modal-open {
     }
     
     .wizard-card {
-        padding: 1rem 0.8rem !important; /* Ultra-snug luxury spacing */
+        padding: 0.8rem 0.65rem !important; /* Ultra-snug luxury spacing */
     }
 
     .wizard-header {
