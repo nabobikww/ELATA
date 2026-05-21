@@ -2509,7 +2509,8 @@ body.modal-open {
     }
 }
 
-.scroll-hint {
+.scroll-hint,
+.mini-list-pagination {
     display: none;
 }
 
@@ -2805,11 +2806,18 @@ body.modal-open {
 
     .rooms-mini-list-container {
         width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
     }
 
     .room-selector-layout {
         grid-template-columns: 1fr !important;
         gap: 0.8rem;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        overflow: hidden !important;
     }
 
     .rooms-mini-list {
@@ -2819,8 +2827,9 @@ body.modal-open {
         scroll-snap-type: x mandatory !important;
         gap: 0.6rem !important;
         max-height: none !important;
-        padding-bottom: 0.4rem;
+        padding: 0.2rem 6% 0.5rem 6% !important; /* Perfect side paddings for centered card */
         scrollbar-width: none;
+        width: 100% !important;
     }
 
     .rooms-mini-list::-webkit-scrollbar {
@@ -2847,13 +2856,14 @@ body.modal-open {
     }
 
     .room-mini-card {
-        flex: 0 0 68% !important; /* Narrower and prevents horizontal card overflow */
-        scroll-snap-align: start !important;
-        padding: 0.4rem 0.5rem !important;
-        border: 1px solid rgba(197, 168, 128, 0.12) !important;
+        flex: 0 0 88% !important; /* Perfectly centered rounded cloud */
+        scroll-snap-align: center !important;
+        padding: 0.45rem 0.6rem !important;
+        border: 1px solid rgba(197, 168, 128, 0.15) !important;
         background: var(--clr-milk) !important;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02) !important;
-        gap: 0.5rem !important;
+        gap: 0.55rem !important;
+        border-radius: 16px !important; /* Rounded flat cloud shape */
         overflow: hidden !important; /* Avoid content spilling out */
     }
 
@@ -2949,10 +2959,14 @@ body.modal-open {
         grid-template-columns: 1fr !important; /* Stack vertically, one under the other */
         gap: 0.4rem !important;
         margin-bottom: 0.3rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .date-input-col {
         gap: 0.2rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .date-input-label {
@@ -2962,6 +2976,8 @@ body.modal-open {
     .date-input-box {
         height: 34px !important; /* Sleek compact box */
         padding: 0.2rem 0.4rem !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .date-placeholder-val {
@@ -3013,10 +3029,38 @@ body.modal-open {
         margin-top: 0.4rem !important;
     }
 
+    .mini-list-pagination {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0.35rem !important;
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.3rem !important;
+        width: 100% !important;
+    }
+
+    .pagination-bullet {
+        width: 14px !important;
+        height: 3px !important;
+        background: rgba(197, 168, 128, 0.25) !important;
+        border-radius: 2px !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+    }
+
+    .pagination-bullet.active {
+        width: 24px !important;
+        background: var(--clr-champagne) !important;
+        box-shadow: 0 0 6px rgba(197, 168, 128, 0.4) !important;
+    }
+
     .inspector-actions button {
-        width: 140px !important; /* Narrow button */
+        width: 190px !important; /* Narrow but spacious enough for letters */
         padding: 0.65rem 0 !important; /* Compact vertical padding */
         font-size: 0.82rem !important;
+        letter-spacing: 0.1em !important; /* Fit text on single line */
+        text-indent: 0.1em !important;
+        white-space: nowrap !important;
     }
 
     /* Step 2 Form Styles on Mobile */
