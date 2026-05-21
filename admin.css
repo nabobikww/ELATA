@@ -300,3 +300,352 @@ body {
     justify-content: flex-end;
     gap: 10px;
 }
+
+/* ---- Mobile Navigation Dock Desktop Default ---- */
+.mobile-nav-dock {
+    display: none;
+}
+
+/* ---- Media Queries for Mobile Devices ---- */
+@media (max-width: 768px) {
+    /* Layout structural overrides */
+    body {
+        flex-direction: column;
+        background-color: var(--clr-milky);
+        min-height: 100vh;
+    }
+
+    .sidebar {
+        display: none !important;
+    }
+
+    .main-content {
+        flex: 1;
+        width: 100% !important;
+        padding-bottom: 90px !important; /* Space for the bottom dock */
+    }
+
+    /* Topbar adjustments */
+    .topbar {
+        height: auto;
+        min-height: 64px;
+        padding: 0.8rem 1rem;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .topbar-search {
+        width: 100% !important;
+        order: 2;
+        margin-top: 4px;
+    }
+
+    .topbar-user {
+        width: auto;
+        margin-left: auto;
+        order: 1;
+        gap: 10px;
+    }
+
+    .manager-name {
+        font-size: 0.9rem;
+    }
+
+    /* Dashboard Container */
+    .dashboard-container {
+        padding: 1rem;
+    }
+
+    .dashboard-header {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.2rem;
+    }
+
+    .dashboard-header h1 {
+        font-size: 1.4rem;
+    }
+
+    .dashboard-header .subtitle {
+        font-size: 0.8rem;
+    }
+
+    .dashboard-header button {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+
+    /* Stats Grid to Card row */
+    .stats-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 1.2rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: var(--radius-md);
+        box-shadow: 0 2px 6px rgba(94, 70, 48, 0.02);
+    }
+
+    .stat-card h3 {
+        margin-bottom: 0;
+        font-size: 0.85rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+    }
+
+    /* Table container */
+    .table-container {
+        padding: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    /* Bookings table to cards transformation */
+    .admin-table {
+        background: transparent;
+    }
+
+    .admin-table thead {
+        display: none !important;
+    }
+
+    #bookingsTableBody {
+        display: block;
+        width: 100%;
+    }
+
+    #bookingsTableBody tr {
+        display: grid !important;
+        grid-template-areas: 
+            "id status"
+            "guest guest"
+            "phone phone"
+            "room room"
+            "dates dates"
+            "action action";
+        grid-gap: 8px;
+        background: var(--clr-white);
+        border-radius: var(--radius-lg);
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(161, 124, 79, 0.1);
+        box-shadow: 0 4px 12px rgba(94, 70, 48, 0.03);
+    }
+
+    #bookingsTableBody td {
+        display: block !important;
+        padding: 0 !important;
+        border: none !important;
+        width: 100% !important;
+        text-align: left;
+    }
+
+    #bookingsTableBody td:nth-child(1) {
+        grid-area: id;
+        font-size: 0.85rem;
+        color: #888;
+        font-weight: 500;
+        align-self: center;
+    }
+
+    #bookingsTableBody td:nth-child(2) {
+        grid-area: guest;
+        font-size: 1.15rem;
+        padding-bottom: 4px !important;
+        border-bottom: 1px dashed rgba(161, 124, 79, 0.15) !important;
+    }
+
+    #bookingsTableBody td:nth-child(3) {
+        grid-area: phone;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    #bookingsTableBody td:nth-child(3)::before {
+        content: "📞  ";
+    }
+
+    #bookingsTableBody td:nth-child(4) {
+        grid-area: room;
+        font-size: 0.9rem;
+        color: var(--clr-dark-accent);
+        font-weight: 500;
+    }
+
+    #bookingsTableBody td:nth-child(4)::before {
+        content: "🏨  ";
+    }
+
+    #bookingsTableBody td:nth-child(5) {
+        grid-area: dates;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    #bookingsTableBody td:nth-child(5)::before {
+        content: "📅  ";
+    }
+
+    #bookingsTableBody td:nth-child(6) {
+        grid-area: status;
+        justify-self: end;
+        width: auto !important;
+    }
+
+    #bookingsTableBody td:nth-child(7) {
+        grid-area: action;
+        margin-top: 8px;
+    }
+
+    #bookingsTableBody td:nth-child(7) .edit-btn {
+        width: 100%;
+        padding: 0.7rem;
+        text-align: center;
+        justify-content: center;
+        font-size: 0.95rem;
+    }
+
+    /* Modal to sliding bottom sheet */
+    .modal {
+        align-items: flex-end !important;
+        justify-content: center;
+    }
+
+    .modal-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: 88vh;
+        border-radius: 24px 24px 0 0 !important;
+        transform: translateY(100%);
+        transition: transform 0.35s cubic-bezier(0.15, 0.85, 0.35, 1);
+        display: flex;
+        flex-direction: column;
+        padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+
+    .modal.active .modal-content {
+        transform: translateY(0);
+    }
+
+    .modal-drag-handle {
+        width: 40px;
+        height: 5px;
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        margin: 12px auto 0 auto;
+        flex-shrink: 0;
+    }
+
+    .modal-header {
+        border-bottom: none;
+        padding: 1rem 1.2rem 0.5rem 1.2rem;
+    }
+
+    .modal-body {
+        padding: 1rem 1.2rem;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 0.8rem;
+    }
+
+    .modal-footer {
+        padding: 1rem 1.2rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+        flex-shrink: 0;
+        gap: 8px;
+    }
+
+    .modal-footer button {
+        flex: 1;
+        padding: 0.75rem 0;
+        font-size: 0.95rem;
+    }
+
+    /* Modal tables (e.g. Blocked dates, users) formatting */
+    .modal-body .admin-table {
+        display: table !important;
+        font-size: 0.85rem;
+        background: var(--clr-white);
+    }
+
+    .modal-body .admin-table thead {
+        display: table-header-group !important;
+    }
+
+    .modal-body .admin-table tr {
+        display: table-row !important;
+        background: transparent !important;
+        border-radius: 0 !important;
+        padding: 0 !important;
+        margin-bottom: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    .modal-body .admin-table th, .modal-body .admin-table td {
+        display: table-cell !important;
+        padding: 0.6rem 0.4rem !important;
+        border-bottom: 1px solid rgba(0,0,0,0.05) !important;
+        width: auto !important;
+        text-align: left;
+    }
+
+    .modal-body .admin-table td:nth-child(n)::before {
+        content: "" !important; /* Remove emoji prefixes inside modal tables */
+    }
+
+    /* Mobile Bottom Navigation Dock */
+    .mobile-nav-dock {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 72px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(20px) saturate(190%);
+        -webkit-backdrop-filter: blur(20px) saturate(190%);
+        border-top: 1px solid rgba(161, 124, 79, 0.15);
+        justify-content: space-around;
+        align-items: center;
+        z-index: 999;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        height: calc(72px + env(safe-area-inset-bottom, 0px));
+        box-shadow: 0 -4px 16px rgba(94, 70, 48, 0.05);
+    }
+
+    .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        color: #8E8E93; /* iOS system gray color */
+        text-decoration: none;
+        font-size: 0.72rem;
+        font-weight: 500;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 4px 12px;
+        border-radius: 8px;
+    }
+
+    .mobile-nav-item svg {
+        transition: transform 0.2s ease;
+    }
+
+    .mobile-nav-item:active svg {
+        transform: scale(0.9);
+    }
+
+    .mobile-nav-item.active {
+        color: var(--clr-smoky-blue);
+    }
+}

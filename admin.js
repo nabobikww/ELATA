@@ -19,14 +19,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkAuth() {
         const user = sessionStorage.getItem('elata_logged_in_user');
+        const mobileNavPasswords = document.getElementById('mobileNavPasswords');
         if (user) {
             loginScreen.style.display = 'none';
             adminApp.style.display = 'flex';
             currentUserName.textContent = user;
             if (user === 'Admin') {
                 passwordsBtnSidebar.style.display = 'flex';
+                if (mobileNavPasswords) mobileNavPasswords.style.display = 'flex';
             } else {
                 passwordsBtnSidebar.style.display = 'none';
+                if (mobileNavPasswords) mobileNavPasswords.style.display = 'none';
             }
         } else {
             loginScreen.style.display = 'flex';
@@ -106,12 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             renderUsersList();
             passwordsModal.classList.add('active');
+            setActiveTab('mobileNavPasswords');
         });
     }
 
     if (closePasswordsModal) {
         closePasswordsModal.addEventListener('click', () => {
             passwordsModal.classList.remove('active');
+            setActiveTab('mobileNavBookings');
         });
     }
 
@@ -130,6 +135,53 @@ document.addEventListener('DOMContentLoaded', () => {
             renderUsersList();
             newLogin.value = '';
             newPassword.value = '';
+        });
+    }
+
+    // ---- Mobile Tab Navigation State Sync ----
+    const mobileNavBookings = document.getElementById('mobileNavBookings');
+    const mobileNavDates = document.getElementById('mobileNavDates');
+    const mobileNavPasswords = document.getElementById('mobileNavPasswords');
+
+    function setActiveTab(tabId) {
+        document.querySelectorAll('.mobile-nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        const activeItem = document.getElementById(tabId);
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
+    }
+
+    if (mobileNavBookings) {
+        mobileNavBookings.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (datesModal) datesModal.classList.remove('active');
+            if (passwordsModal) passwordsModal.classList.remove('active');
+            if (modal) modal.classList.remove('active');
+            setActiveTab('mobileNavBookings');
+        });
+    }
+
+    if (mobileNavDates) {
+        mobileNavDates.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (passwordsModal) passwordsModal.classList.remove('active');
+            if (modal) modal.classList.remove('active');
+            renderBlockedDates();
+            datesModal.classList.add('active');
+            setActiveTab('mobileNavDates');
+        });
+    }
+
+    if (mobileNavPasswords) {
+        mobileNavPasswords.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (datesModal) datesModal.classList.remove('active');
+            if (modal) modal.classList.remove('active');
+            renderUsersList();
+            passwordsModal.classList.add('active');
+            setActiveTab('mobileNavPasswords');
         });
     }
 
@@ -301,6 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeModal() {
         modal.classList.remove('active');
         currentEditId = null;
+        setActiveTab('mobileNavBookings');
     }
 
     document.getElementById('closeModal').addEventListener('click', closeModal);
@@ -484,12 +537,14 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             renderBlockedDates();
             datesModal.classList.add('active');
+            setActiveTab('mobileNavDates');
         });
     }
 
     if (closeDatesModalBtn) {
         closeDatesModalBtn.addEventListener('click', () => {
             datesModal.classList.remove('active');
+            setActiveTab('mobileNavBookings');
         });
     }
 
@@ -528,12 +583,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('click', (e) => {
         if (e.target === modal) {
             closeModal();
+            setActiveTab('mobileNavBookings');
         }
         if (e.target === datesModal) {
             datesModal.classList.remove('active');
+            setActiveTab('mobileNavBookings');
         }
         if (e.target === passwordsModal) {
             passwordsModal.classList.remove('active');
+            setActiveTab('mobileNavBookings');
         }
     });
 

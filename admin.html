@@ -120,6 +120,7 @@
     <!-- Edit Modal (Hidden by default) -->
     <div class="modal" id="editModal">
         <div class="modal-content">
+            <div class="modal-drag-handle"></div>
             <div class="modal-header" style="justify-content: space-between; align-items: center;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <button id="deleteBookingBtn" style="background: none; border: 1px solid #ff4d4f; color: #ff4d4f; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-family: inherit;">Видалити</button>
@@ -163,6 +164,7 @@
     <!-- Blocked Dates Modal -->
     <div class="modal" id="datesModal">
         <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-drag-handle"></div>
             <div class="modal-header">
                 <h2 style="margin: 0;">Закриті періоди</h2>
                 <button class="close-btn" id="closeDatesModal">&times;</button>
@@ -210,11 +212,28 @@
     </div>
 
 
+    <!-- Mobile Bottom Navigation Dock -->
+    <div class="mobile-nav-dock">
+        <a href="#" class="mobile-nav-item active" id="mobileNavBookings">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            <span>Бронювання</span>
+        </a>
+        <a href="#" class="mobile-nav-item" id="mobileNavDates">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span>Закриті дати</span>
+        </a>
+        <a href="#" class="mobile-nav-item" id="mobileNavPasswords" style="display: none;">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            <span>Паролі</span>
+        </a>
+    </div>
+
     </div> <!-- End Admin App -->
 
     <!-- Passwords Modal -->
     <div class="modal" id="passwordsModal">
         <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-drag-handle"></div>
             <div class="modal-header">
                 <h2 style="margin: 0;">Керування менеджерами</h2>
                 <button class="close-btn" id="closePasswordsModal">&times;</button>
