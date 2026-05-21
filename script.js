@@ -119,7 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (preloader) {
         setTimeout(() => {
             preloader.classList.add('hidden');
-        }, 800); // Small delay to sh    // 2. Booking Form Simulation
+        }, 800); // Small delay to show brand logo
+    }
+
+    // 2. Booking Form Simulation
     const bookingForm = document.getElementById('bookingForm');
     const phoneInput = document.getElementById('phone');
 
