@@ -133,44 +133,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ---- Secure Cloud Database Integration (JSONBin-zeta) ----
-    const DB_URL = 'https://jsonbin-zeta.vercel.app/api/bins/LaH3DFwkrP';
-    let dbData = { bookings: [], blocked_dates: [] };
-    let bookings = [];
+    // Empty Data for Bookings
+    const defaultBookings = [];
 
-    // Load from Cloud Database
-    async function loadDbData() {
-        try {
-            const res = await fetch(DB_URL);
-            if (res.ok) {
-                const json = await res.json();
-                if (json && json.data) {
-                    dbData = json.data;
-                    bookings = dbData.bookings || [];
-                }
-            }
-        } catch (e) {
-            console.error("Failed to load cloud database inside admin app", e);
-        }
-    }
-
-    // Save back to Cloud Database
-    async function saveDbData() {
-        try {
-            dbData.bookings = bookings;
-            const res = await fetch(DB_URL, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(dbData)
-            });
-            return res.ok;
-        } catch (e) {
-            console.error("Failed to save cloud database inside admin app", e);
-            return false;
-        }
-    }
+    // Load from LocalStorage or use default
+    let bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || defaultBookings;
 
     const tableBody = document.getElementById('bookingsTableBody');
     const statNew = document.getElementById('statNew');
@@ -181,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentEditId = null;
 
     function renderTable() {
-        if (!tableBody) return;
         tableBody.innerHTML = '';
         let countNew = 0;
         let countConfirmed = 0;
@@ -209,9 +175,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Update stats
-        if (statNew) statNew.textContent = countNew;
-        if (statConfirmed) statConfirmed.textContent = countConfirmed;
-        if (statTotal) statTotal.textContent = bookings.length;
+        statNew.textContent = countNew;
+        statConfirmed.textContent = countConfirmed;
+        statTotal.textContent = bookings.length;
 
         // Attach event listeners to buttons
         document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -245,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('closeModal').addEventListener('click', closeModal);
     document.getElementById('cancelModal').addEventListener('click', closeModal);
 
-    document.getElementById('saveModal').addEventListener('click', async () => {
+    document.getElementById('saveModal').addEventListener('click', () => {
         if (!currentEditId) return;
 
         const newStatus = document.getElementById('modalStatus').value;
@@ -296,36 +262,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
-            // Save to cloud and render
-            const saveBtn = document.getElementById('saveModal');
-            const originalText = saveBtn.textContent;
-            saveBtn.textContent = 'Зберігаємо...';
-            saveBtn.disabled = true;
-
-            const success = await saveDbData();
-            
-            saveBtn.textContent = originalText;
-            saveBtn.disabled = false;
-
-            if (success) {
-                renderTable();
-                closeModal();
-            } else {
-                alert('Не вдалося зберегти зміни на сервері. Будь ласка, спробуйте пізніше.');
-            }
+            localStorage.setItem('elata_bookings_v2', JSON.stringify(bookings));
+            renderTable();
+            closeModal();
         }
     });
 
-    document.getElementById('refreshBtn').addEventListener('click', async () => {
-        const refreshBtn = document.getElementById('refreshBtn');
-        refreshBtn.style.opacity = '0.5';
-        await loadDbData();
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+        bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || defaultBookings;
         renderTable();
-        refreshBtn.style.opacity = '1';
     });
 
     // Delete Booking Logic
-    document.getElementById('deleteBookingBtn').addEventListener('click', async () => {
+    document.getElementById('deleteBookingBtn').addEventListener('click', () => {
         if (!currentEditId) return;
         if (confirm('Ви впевнені, що хочете видалити цю заявку?')) {
             const bookingToDelete = bookings.find(item => item.id === currentEditId);
@@ -349,23 +298,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             bookings = bookings.filter(item => item.id !== currentEditId);
-            
-            const delBtn = document.getElementById('deleteBookingBtn');
-            const originalText = delBtn.textContent;
-            delBtn.textContent = 'Видаляємо...';
-            delBtn.disabled = true;
-
-            const success = await saveDbData();
-
-            delBtn.textContent = originalText;
-            delBtn.disabled = false;
-
-            if (success) {
-                renderTable();
-                closeModal();
-            } else {
-                alert('Не вдалося видалити заявку з сервера. Спробуйте пізніше.');
-            }
+            localStorage.setItem('elata_bookings_v2', JSON.stringify(bookings));
+            renderTable();
+            closeModal();
         }
     });
 
@@ -391,15 +326,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function getBlockedDates() {
-        return dbData.blocked_dates || [];
+        return JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
     }
 
     function saveBlockedDates(dates) {
-        dbData.blocked_dates = dates;
+        localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(dates));
     }
 
     function renderBlockedDates() {
-        if (!blockedDatesList) return;
         blockedDatesList.innerHTML = '';
         const ranges = getBlockedDates();
         
@@ -423,21 +357,10 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.textContent = 'Відкрити';
             btn.className = 'btn-outline btn-sm';
             btn.style.padding = '0.2rem 0.5rem';
-            btn.onclick = async () => {
+            btn.onclick = () => {
                 const newRanges = getBlockedDates().filter((_, i) => i !== index);
                 saveBlockedDates(newRanges);
-                
-                btn.textContent = 'Відкриваємо...';
-                btn.disabled = true;
-
-                const success = await saveDbData();
-                if (success) {
-                    renderBlockedDates();
-                } else {
-                    alert('Не вдалося відкрити дати на сервері.');
-                    btn.textContent = 'Відкрити';
-                    btn.disabled = false;
-                }
+                renderBlockedDates();
             };
             tdActions.appendChild(btn);
             
@@ -464,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (addBlockDateBtn) {
-        addBlockDateBtn.addEventListener('click', async () => {
+        addBlockDateBtn.addEventListener('click', () => {
             const startVal = blockStartDate.value;
             const endVal = blockEndDate.value;
             const roomVal = document.getElementById('blockRoomSelect').value;
@@ -485,22 +408,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!isDuplicate) {
                 ranges.push({ start: startVal, end: endVal, room: roomVal });
                 saveBlockedDates(ranges);
-                
-                addBlockDateBtn.textContent = 'Блокуємо...';
-                addBlockDateBtn.disabled = true;
-
-                const success = await saveDbData();
-                
-                addBlockDateBtn.textContent = 'Заблокувати період';
-                addBlockDateBtn.disabled = false;
-
-                if (success) {
-                    blockStartDate.value = '';
-                    blockEndDate.value = '';
-                    renderBlockedDates();
-                } else {
-                    alert('Не вдалося заблокувати дати на сервері.');
-                }
+                blockStartDate.value = '';
+                blockEndDate.value = '';
+                renderBlockedDates();
             } else {
                 alert('Цей період вже закритий для вибраного номера.');
             }
@@ -520,18 +430,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Auto Refresh every 10 seconds from cloud database
-    setInterval(async () => {
-        // Only refresh if modal is not currently active to prevent editing interference
-        if (!modal.classList.contains('active') && !datesModal.classList.contains('active') && !passwordsModal.classList.contains('active')) {
-            await loadDbData();
-            renderTable();
-        }
+    // Auto Refresh every 10 seconds
+    setInterval(() => {
+        bookings = JSON.parse(localStorage.getItem('elata_bookings_v2')) || [];
+        renderTable();
     }, 10000);
 
-    // Initial cloud load and render
-    loadDbData().then(() => {
-        renderTable();
-    });
-});
+    // Initial render
+    renderTable();
 });
