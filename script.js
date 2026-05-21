@@ -119,10 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (preloader) {
         setTimeout(() => {
             preloader.classList.add('hidden');
-        }, 800); // Small delay to show the animation
-    }
-
-    // 2. Booking Form Simulation
+        }, 800); // Small delay to sh    // 2. Booking Form Simulation
     const bookingForm = document.getElementById('bookingForm');
     const phoneInput = document.getElementById('phone');
 
@@ -139,15 +136,29 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const name = document.getElementById('name').value;
             const phone = document.getElementById('phone').value;
-            const checkin = document.getElementById('checkin').value;
-            const checkout = document.getElementById('checkout').value;
-            const guests = document.getElementById('guests').value;
-            const room = document.getElementById('roomSelect').value;
+            const checkin = selectedCheckinVal;
+            const checkout = selectedCheckoutVal;
+            const room = selectedRoomVal;
             
+            const adultsVal = document.getElementById('bookingAdults').value;
+            const childrenVal = document.getElementById('bookingChildren').value;
+            
+            let adultsText = adultsVal === "more_adults" ? "4+ дор." : `${adultsVal} дор.`;
+            let childrenText = "";
+            if (childrenVal !== "0") {
+                childrenText = childrenVal === "more_children" ? ", 3+ діт." : `, ${childrenVal} діт.`;
+            }
+            const guestsCombined = `${adultsText}${childrenText}`;
+
             // Phone validation
             const digitsOnly = phone.replace(/[^\d]/g, '');
             if (digitsOnly.length < 10 || digitsOnly.length > 12) {
                 alert('Будь ласка, введіть коректний номер телефону (мінімум 10 цифр, наприклад: 098... або +380...).');
+                return;
+            }
+
+            if (!checkin || !checkout) {
+                alert('Будь ласка, виберіть дати заїзду та виїзду на календарі.');
                 return;
             }
 
@@ -187,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     id: newId,
                     name: name,
                     phone: phone,
-                    room: `${room} (${guests} ос.)`,
+                    room: `${room} (${guestsCombined})`,
                     dates: formattedDates,
                     status: 'Нове',
                     comment: 'Бронювання з головної сторінки'
@@ -203,12 +214,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Дякуємо! Ваше бронювання надіслано менеджеру. Дати будуть зарезервовані після підтвердження заявки.');
                 bookingForm.reset();
                 
-                // Закриваємо модалку
-                const bookingModal = document.getElementById('bookingModal');
-                if (bookingModal) {
-                    bookingModal.classList.remove('active');
-                    document.body.classList.remove('modal-open');
+                // Скидаємо календар
+                if (fpInline) {
+                    fpInline.clear();
                 }
+                selectedCheckinVal = "";
+                selectedCheckoutVal = "";
+                btnGoToStep2.disabled = true;
+                dateRecapText.innerText = "Дати ще не обрано";
+                
+                // Закриваємо модалку
+                closeModal();
             } catch (err) {
                 console.error(err);
                 alert('Сталася помилка при збереженні бронювання. Спробуйте пізніше.');
@@ -220,90 +236,202 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Initialize Flatpickr for checkin/checkout to visually block dates
-    const checkinElem = document.getElementById('checkin');
-    const checkoutElem = document.getElementById('checkout');
-    
-    if (checkinElem && checkoutElem && typeof flatpickr !== 'undefined') {
-        let fpCheckin = null;
-        let fpCheckout = null;
+    // ---- 2-Step Booking Wizard Controller ----
+    let selectedRoomVal = "Двомісний номер";
+    let selectedRoomPrice = 880;
+    let selectedRoomImage = "DSC08330.JPG";
+    let selectedRoomCapacity = "1–2 особи";
+    let selectedRoomDesc = "Затишний номер з великим ліжком, власною ванною та телевізором.";
 
-        const updateFlatpickr = () => {
-            const selectedRoom = document.getElementById('roomSelect') ? document.getElementById('roomSelect').value : '';
-            
-            const allRanges = getBlockedDates();
-            const relevantRanges = allRanges.filter(range => {
-                if (!range) return false;
-                if (!range.room) return true; // Legacy dates without room
-                if (range.room === 'Усі номери') return true; // Blocked globally
-                if (selectedRoom && range.room === selectedRoom) return true; // Blocked for this specific room
-                return false;
-            });
-            
-            const blockedRanges = relevantRanges.map(range => {
-                if (typeof range === 'string') {
-                    return range;
-                }
-                return {
-                    from: range.start,
-                    to: range.end
-                };
-            });
+    let selectedCheckinVal = "";
+    let selectedCheckoutVal = "";
+    let fpInline = null;
 
-            const fpConfig = {
-                minDate: "today",
-                disable: blockedRanges,
-                dateFormat: "Y-m-d",
-                locale: "uk",
-                onDayCreate: function(dObj, dStr, fp, dayElem) {
-                    const checkDate = new Date(dayElem.dateObj);
-                    checkDate.setHours(0, 0, 0, 0);
-                    
-                    const isBlocked = blockedRanges.some(range => {
-                        if (typeof range === 'string') {
-                            const legacyDate = new Date(range);
-                            legacyDate.setHours(0, 0, 0, 0);
-                            return checkDate.getTime() === legacyDate.getTime();
-                        }
-                        const start = new Date(range.from);
-                        start.setHours(0, 0, 0, 0);
-                        const end = new Date(range.to);
-                        end.setHours(0, 0, 0, 0);
-                        return checkDate >= start && checkDate <= end;
-                    });
-                    
-                    if (isBlocked) {
-                        dayElem.classList.add('custom-blocked-date');
-                    }
-                }
-            };
-            
-            if (fpCheckin) fpCheckin.destroy();
-            if (fpCheckout) fpCheckout.destroy();
+    const btnGoToStep2 = document.getElementById('btnGoToStep2');
+    const btnBackToStep1 = document.getElementById('btnBackToStep1');
+    const step1Panel = document.getElementById('bookingStep1');
+    const step2Panel = document.getElementById('bookingStep2');
+    const indicatorStep1 = document.getElementById('indicatorStep1');
+    const indicatorStep2 = document.getElementById('indicatorStep2');
+    const dateRecapText = document.getElementById('dateRecapText');
 
-            fpCheckin = flatpickr(checkinElem, fpConfig);
-            fpCheckout = flatpickr(checkoutElem, fpConfig);
-        };
-        
-        // Update initially after syncing with cloud
-        syncWithCloud().then(() => {
-            updateFlatpickr();
-        });
+    // Update Inline Calendar with active room blocked dates
+    function updateInlineCalendar() {
+        const calendarContainer = document.getElementById('inlineCalendarContainer');
+        if (!calendarContainer || typeof flatpickr === 'undefined') return;
 
-        // Update when room selection changes
-        const roomSelect = document.getElementById('roomSelect');
-        if (roomSelect) {
-            roomSelect.addEventListener('change', updateFlatpickr);
+        // Clear existing flatpickr instance
+        if (fpInline) {
+            fpInline.destroy();
+            fpInline = null;
         }
 
-        // Also update and sync whenever modal is opened
-        const openModalBtns = document.querySelectorAll('.open-booking, .room-card');
-        openModalBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                syncWithCloud().then(() => {
-                    updateFlatpickr();
+        const allRanges = getBlockedDates();
+        const relevantRanges = allRanges.filter(range => {
+            if (!range) return false;
+            if (!range.room) return true; // Legacy dates without room
+            if (range.room === 'Усі номери') return true; // Blocked globally
+            if (selectedRoomVal && range.room === selectedRoomVal) return true; // Blocked for selected room
+            return false;
+        });
+
+        const blockedRanges = relevantRanges.map(range => {
+            if (typeof range === 'string') {
+                return range;
+            }
+            return {
+                from: range.start,
+                to: range.end
+            };
+        });
+
+        // Initialize inline range flatpickr
+        fpInline = flatpickr(calendarContainer, {
+            inline: true,
+            mode: "range",
+            minDate: "today",
+            disable: blockedRanges,
+            dateFormat: "Y-m-d",
+            locale: "uk",
+            defaultDate: selectedCheckinVal && selectedCheckoutVal ? [selectedCheckinVal, selectedCheckoutVal] : [],
+            onDayCreate: function(dObj, dStr, fp, dayElem) {
+                const checkDate = new Date(dayElem.dateObj);
+                checkDate.setHours(0, 0, 0, 0);
+                
+                const isBlocked = blockedRanges.some(range => {
+                    if (typeof range === 'string') {
+                        const legacyDate = new Date(range);
+                        legacyDate.setHours(0, 0, 0, 0);
+                        return checkDate.getTime() === legacyDate.getTime();
+                    }
+                    const start = new Date(range.from);
+                    start.setHours(0, 0, 0, 0);
+                    const end = new Date(range.to);
+                    end.setHours(0, 0, 0, 0);
+                    return checkDate >= start && checkDate <= end;
                 });
-            });
+                
+                if (isBlocked) {
+                    dayElem.classList.add('custom-blocked-date');
+                }
+            },
+            onChange: function(selectedDates) {
+                if (selectedDates.length === 2) {
+                    const start = selectedDates[0];
+                    const end = selectedDates[1];
+
+                    // Standardize local date strings
+                    const formatYMD = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                    const startStr = formatYMD(start);
+                    const endStr = formatYMD(end);
+
+                    // Check if range contains blocked dates
+                    const blockedDateInBetween = checkDatesRange(startStr, endStr, selectedRoomVal);
+                    if (blockedDateInBetween) {
+                        alert(`На жаль, цей період включає вже заброньовану дату: ${blockedDateInBetween}. Оберіть інший період.`);
+                        fpInline.clear();
+                        selectedCheckinVal = "";
+                        selectedCheckoutVal = "";
+                        btnGoToStep2.disabled = true;
+                        dateRecapText.innerText = "Дати ще не обрано";
+                        return;
+                    }
+
+                    selectedCheckinVal = startStr;
+                    selectedCheckoutVal = endStr;
+                    btnGoToStep2.disabled = false;
+
+                    // Calculate nights
+                    const diffTime = Math.abs(end - start);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                    const formatDateUk = (date) => {
+                        const months = ['січ.', 'лют.', 'берез.', 'квіт.', 'трав.', 'черв.', 'лип.', 'серп.', 'верес.', 'жовт.', 'лист.', 'груд.'];
+                        return `${date.getDate()} ${months[date.getMonth()]}`;
+                    };
+
+                    dateRecapText.innerHTML = `<span style="color: #27ae60; font-weight: 600;">Обрано:</span> ${formatDateUk(start)} — ${formatDateUk(end)} (${diffDays} ${diffDays === 1 ? 'ніч' : diffDays < 5 ? 'ночі' : 'ночей'})`;
+
+                    // Update Step 2 Summary Recaps
+                    const recapDates = document.getElementById('recapDates');
+                    const recapNights = document.getElementById('recapNights');
+                    const recapTotalPrice = document.getElementById('recapTotalPrice');
+
+                    if (recapDates) recapDates.innerText = `${start.getDate().toString().padStart(2, '0')}.${(start.getMonth() + 1).toString().padStart(2, '0')}.${start.getFullYear()} - ${end.getDate().toString().padStart(2, '0')}.${(end.getMonth() + 1).toString().padStart(2, '0')}.${end.getFullYear()}`;
+                    if (recapNights) recapNights.innerText = `${diffDays} ${diffDays === 1 ? 'ніч' : diffDays < 5 ? 'ночі' : 'ночей'}`;
+                    if (recapTotalPrice) {
+                        const total = diffDays * selectedRoomPrice;
+                        recapTotalPrice.innerText = `${total.toLocaleString()} грн`;
+                    }
+                } else {
+                    selectedCheckinVal = "";
+                    selectedCheckoutVal = "";
+                    btnGoToStep2.disabled = true;
+                    dateRecapText.innerText = "Дати ще не обрано";
+                }
+            }
+        });
+    }
+
+    // Connect Mini Card Clicks
+    const roomMiniCards = document.querySelectorAll('.room-mini-card');
+    roomMiniCards.forEach(card => {
+        card.addEventListener('click', () => {
+            // Remove active classes
+            roomMiniCards.forEach(c => c.classList.remove('active'));
+            card.classList.add('active');
+
+            // Read variables
+            selectedRoomVal = card.getAttribute('data-room-val');
+            selectedRoomPrice = parseInt(card.getAttribute('data-room-price'));
+            selectedRoomImage = card.getAttribute('data-room-image');
+            selectedRoomCapacity = card.getAttribute('data-room-capacity');
+            selectedRoomDesc = card.getAttribute('data-room-desc');
+
+            // Update Inspector Details
+            document.getElementById('inspectorImage').src = selectedRoomImage;
+            document.getElementById('inspectorCapacity').innerText = selectedRoomCapacity;
+            document.getElementById('inspectorTitle').innerText = selectedRoomVal;
+            document.getElementById('inspectorPrice').innerText = `від ${selectedRoomPrice} грн / ніч`;
+            document.getElementById('inspectorDesc').innerText = selectedRoomDesc;
+
+            // Update Step 2 recap defaults
+            document.getElementById('recapRoomImage').src = selectedRoomImage;
+            document.getElementById('recapRoomTitle').innerText = selectedRoomVal;
+            document.getElementById('recapRoomPrice').innerText = `${selectedRoomPrice} грн / ніч`;
+
+            // Reset calendar values and dates selected on room change to prevent crossing bookings
+            selectedCheckinVal = "";
+            selectedCheckoutVal = "";
+            btnGoToStep2.disabled = true;
+            dateRecapText.innerText = "Дати ще не обрано";
+
+            // Update calendar with new room parameters
+            updateInlineCalendar();
+        });
+    });
+
+    // Step navigation actions
+    if (btnGoToStep2) {
+        btnGoToStep2.addEventListener('click', () => {
+            if (selectedCheckinVal && selectedCheckoutVal) {
+                step1Panel.classList.remove('active');
+                step2Panel.classList.add('active');
+                indicatorStep1.classList.remove('active');
+                indicatorStep2.classList.add('active');
+                
+                // Force scroll top for modal card to ensure form fields are visible on mobile
+                document.querySelector('.booking-wizard-container').scrollTop = 0;
+            }
+        });
+    }
+
+    if (btnBackToStep1) {
+        btnBackToStep1.addEventListener('click', () => {
+            step2Panel.classList.remove('active');
+            step1Panel.classList.add('active');
+            indicatorStep2.classList.remove('active');
+            indicatorStep1.classList.add('active');
         });
     }
 
@@ -414,9 +542,70 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalBtn = document.getElementById('closeModal');
     const modalOverlay = document.querySelector('.modal-overlay');
 
-    const openModal = () => {
+    const openModal = (targetRoomName) => {
         bookingModal.classList.add('active');
         document.body.classList.add('modal-open');
+
+        // Reset wizard steps to step 1
+        if (step1Panel) step1Panel.classList.add('active');
+        if (step2Panel) step2Panel.classList.remove('active');
+        if (indicatorStep1) indicatorStep1.classList.add('active');
+        if (indicatorStep2) indicatorStep2.classList.remove('active');
+
+        // Always reset dates when opening the modal for pristine state
+        selectedCheckinVal = "";
+        selectedCheckoutVal = "";
+        if (btnGoToStep2) btnGoToStep2.disabled = true;
+        if (dateRecapText) dateRecapText.innerText = "Дати ще не обрано";
+
+        const selectActiveRoom = () => {
+            if (targetRoomName) {
+                const cards = document.querySelectorAll('.room-mini-card');
+                let foundCard = null;
+                
+                // Exact match check
+                cards.forEach(card => {
+                    const roomVal = card.getAttribute('data-room-val');
+                    if (roomVal && roomVal.toLowerCase().trim() === targetRoomName.toLowerCase().trim()) {
+                        foundCard = card;
+                    }
+                });
+
+                // Fuzzy match check if exact match not found
+                if (!foundCard) {
+                    cards.forEach(card => {
+                        const roomVal = card.getAttribute('data-room-val');
+                        if (roomVal && (roomVal.toLowerCase().includes(targetRoomName.toLowerCase()) || targetRoomName.toLowerCase().includes(roomVal.toLowerCase()))) {
+                            foundCard = card;
+                        }
+                    });
+                }
+
+                if (foundCard) {
+                    foundCard.click();
+                } else if (cards.length > 0) {
+                    cards[0].click();
+                }
+            } else {
+                // Simulated click on currently active mini card to guarantee inline Flatpickr rendering
+                const activeCard = document.querySelector('.room-mini-card.active');
+                if (activeCard) {
+                    activeCard.click();
+                } else {
+                    const firstCard = document.querySelector('.room-mini-card');
+                    if (firstCard) firstCard.click();
+                }
+            }
+        };
+
+        // Render immediately using cache
+        selectActiveRoom();
+
+        // Perform cloud sync in the background to fetch latest real-time dates
+        syncWithCloud().then(() => {
+            // Silently refresh calendar with new blocked ranges if any
+            updateInlineCalendar();
+        });
     };
 
     const closeModal = () => {
@@ -427,7 +616,18 @@ document.addEventListener('DOMContentLoaded', () => {
     openModalBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
-            openModal();
+            
+            // Check if clicked element or its parent is a room-card
+            const roomCard = e.currentTarget.classList.contains('room-card') ? e.currentTarget : null;
+            let roomName = "";
+            if (roomCard) {
+                const titleEl = roomCard.querySelector('.room-info h3');
+                if (titleEl) {
+                    roomName = titleEl.innerText || titleEl.textContent;
+                }
+            }
+            
+            openModal(roomName);
         });
     });
 
@@ -756,4 +956,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial check
     handleScrollAnimations();
+
+    // Background cache warming sync on page load
+    syncWithCloud();
 });

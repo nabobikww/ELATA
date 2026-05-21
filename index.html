@@ -518,54 +518,165 @@
     <!-- Booking Modal -->
     <div id="bookingModal" class="modal">
         <div class="modal-overlay"></div>
-        <div class="modal-container">
-            <div class="booking-card">
+        <div class="modal-container booking-wizard-container">
+            <div class="booking-card wizard-card">
                 <button class="modal-close" id="closeModal">×</button>
-                <span class="booking-label">ШВИДКЕ БРОНЮВАННЯ</span>
-                <h3>Заплануйте свій відпочинок</h3>
-                <form class="booking-form" id="bookingForm">
-                    <div class="form-group">
-                        <label for="name">ВАШЕ ІМ'Я</label>
-                        <input type="text" id="name" placeholder="Ім'я та прізвище" required>
+                
+                <!-- Wizard Header -->
+                <div class="wizard-header">
+                    <span class="booking-label">БРОНЮВАННЯ НОМЕРІВ</span>
+                    <div class="wizard-steps-indicator">
+                        <span class="step-indicator active" id="indicatorStep1">1. Вибір номера та дат</span>
+                        <span class="step-indicator" id="indicatorStep2">2. Дані для зв'язку</span>
                     </div>
-                    <div class="form-group">
-                        <label for="phone">ТЕЛЕФОН</label>
-                        <input type="tel" id="phone" placeholder="+380 ..." required>
-                    </div>
-                    <div class="form-group">
-                        <label for="roomSelect">ОБЕРІТЬ НОМЕР</label>
-                        <select id="roomSelect" required>
-                            <option value="" disabled selected>Виберіть номер...</option>
-                            <option value="Двомісний номер">Двомісний номер</option>
-                            <option value="Бюджетний двомісний номер">Бюджетний двомісний номер</option>
-                            <option value="Тримісний номер з терасою">Тримісний номер з терасою</option>
-                            <option value="Чотиримісний номер Делюкс">Чотиримісний номер Делюкс</option>
-                            <option value="Чотиримісний номер Преміум">Чотиримісний номер Преміум</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="guests">КІЛЬКІСТЬ ОСІБ</label>
-                        <select id="guests">
-                            <option value="1">1 особа</option>
-                            <option value="2" selected>2 особи</option>
-                            <option value="3">3 особи</option>
-                            <option value="4">4 особи</option>
-                            <option value="more">Більше 4 осіб</option>
-                        </select>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="checkin">ДАТА ЗАЇЗДУ</label>
-                            <input type="text" id="checkin" placeholder="15.06.2026" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="checkout">ДАТА ВИЇЗДУ</label>
-                            <input type="text" id="checkout" placeholder="22.06.2026" required>
-                        </div>
-                    </div>
+                </div>
 
-                    <button type="submit" class="btn-submit">НАДІСЛАТИ ЗАПИТ</button>
-                </form>
+                <!-- Step 1: Room & Calendar Selector -->
+                <div class="wizard-step active" id="bookingStep1">
+                    <div class="room-selector-layout">
+                        <!-- Mini Rooms List -->
+                        <div class="rooms-mini-list">
+                            <div class="room-mini-card active" data-room-val="Двомісний номер" data-room-price="880" data-room-image="DSC08330.JPG" data-room-desc="Затишний номер з великим ліжком, власною ванною та телевізором." data-room-capacity="1–2 особи">
+                                <img src="DSC08330.JPG" alt="Двомісний номер">
+                                <div class="room-mini-info">
+                                    <h4>Двомісний номер</h4>
+                                    <span class="room-mini-price">від 880 грн / ніч</span>
+                                </div>
+                            </div>
+                            <div class="room-mini-card" data-room-val="Бюджетний двомісний номер" data-room-price="820" data-room-image="DSC08330.JPG" data-room-desc="Компактний та зручний варіант для економного відпочинку." data-room-capacity="1–2 особи">
+                                <img src="DSC08330.JPG" alt="Бюджетний двомісний номер">
+                                <div class="room-mini-info">
+                                    <h4>Бюджетний номер</h4>
+                                    <span class="room-mini-price">від 820 грн / ніч</span>
+                                </div>
+                            </div>
+                            <div class="room-mini-card" data-room-val="Тримісний номер з терасою" data-room-price="1330" data-room-image="DSC08472.JPG" data-room-desc="Ексклюзивний номер із власною терасою та панорамним видом на гори." data-room-capacity="2–3 особи">
+                                <img src="DSC08472.JPG" alt="Тримісний номер з терасою">
+                                <div class="room-mini-info">
+                                    <h4>Тримісний з терасою</h4>
+                                    <span class="room-mini-price">від 1 330 грн / ніч</span>
+                                </div>
+                            </div>
+                            <div class="room-mini-card" data-room-val="Чотиримісний номер Делюкс" data-room-price="1260" data-room-image="DSC08414.JPG" data-room-desc="Просторий номер для родини або компанії з покращеним плануванням." data-room-capacity="2–4 особи">
+                                <img src="DSC08414.JPG" alt="Чотиримісний номер Делюкс">
+                                <div class="room-mini-info">
+                                    <h4>Чотиримісний Делюкс</h4>
+                                    <span class="room-mini-price">від 1 260 грн / ніч</span>
+                                </div>
+                            </div>
+                            <div class="room-mini-card" data-room-val="Чотиримісний номер Преміум" data-room-price="1330" data-room-image="DSC08414.JPG" data-room-desc="Високий рівень комфорту та стильний інтер'єр для великої родини." data-room-capacity="2–4 особи">
+                                <img src="DSC08414.JPG" alt="Чотиримісний номер Преміум">
+                                <div class="room-mini-info">
+                                    <h4>Чотиримісний Преміум</h4>
+                                    <span class="room-mini-price">від 1 330 грн / ніч</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Room Inspector & Inline Calendar Panel -->
+                        <div class="room-inspector-panel">
+                            <div class="inspector-details">
+                                <div class="inspector-image-wrap">
+                                    <img id="inspectorImage" src="DSC08330.JPG" alt="Обраний номер">
+                                    <div class="inspector-capacity-badge" id="inspectorCapacity">1–2 особи</div>
+                                </div>
+                                <div class="inspector-info">
+                                    <div class="inspector-title-row">
+                                        <h3 id="inspectorTitle">Двомісний номер</h3>
+                                        <span class="inspector-price-tag" id="inspectorPrice">від 880 грн / ніч</span>
+                                    </div>
+                                    <p id="inspectorDesc">Затишний номер з великим ліжком, власною ванною та телевізором.</p>
+                                </div>
+                            </div>
+
+                            <div class="calendar-selection-panel">
+                                <label class="calendar-label">ОБЕРІТЬ ДАТИ ВІДПОЧИНКУ НА КАЛЕНДАРІ</label>
+                                <div id="inlineCalendarContainer" class="inline-calendar-wrapper"></div>
+                                <div class="date-recap">
+                                    <span class="date-recap-text" id="dateRecapText">Дати ще не обрано</span>
+                                </div>
+                            </div>
+
+                            <div class="inspector-actions">
+                                <button type="button" class="btn-primary" id="btnGoToStep2" disabled>Продовжити</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Guest Details & Split Selectors -->
+                <div class="wizard-step" id="bookingStep2">
+                    <form class="booking-form" id="bookingForm">
+                        <div class="booking-wizard-step2-grid">
+                            
+                            <!-- Guest Details Form Fields -->
+                            <div class="guest-details-fields">
+                                <div class="form-group">
+                                    <label for="name">ВАШЕ ІМ'Я ТА ПРІЗВИЩЕ</label>
+                                    <input type="text" id="name" placeholder="Ім'я та прізвище" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">ТЕЛЕФОН</label>
+                                    <input type="tel" id="phone" placeholder="+380 ..." required>
+                                </div>
+                                
+                                <div class="form-row guests-split-row">
+                                    <div class="form-group">
+                                        <label for="bookingAdults">ДОРОСЛІ</label>
+                                        <select id="bookingAdults" required>
+                                            <option value="1">1 дорослий</option>
+                                            <option value="2" selected>2 дорослих</option>
+                                            <option value="3">3 дорослих</option>
+                                            <option value="4">4 дорослих</option>
+                                            <option value="more_adults">Більше 4</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="bookingChildren">ДІТИ</label>
+                                        <select id="bookingChildren" required>
+                                            <option value="0" selected>Без дітей</option>
+                                            <option value="1">1 дитина</option>
+                                            <option value="2">2 дітей</option>
+                                            <option value="3">3 дітей</option>
+                                            <option value="more_children">Більше 3</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Booking Recap Summary Card -->
+                            <div class="booking-summary-recap">
+                                <h4>Деталі вашого бронювання</h4>
+                                <div class="recap-room-card">
+                                    <img id="recapRoomImage" src="DSC08330.JPG" alt="Обраний номер">
+                                    <div class="recap-room-details">
+                                        <h5 id="recapRoomTitle">Двомісний номер</h5>
+                                        <span id="recapRoomPrice">880 грн / ніч</span>
+                                    </div>
+                                </div>
+                                <div class="recap-info-list">
+                                    <div class="recap-info-item">
+                                        <span class="recap-info-label">Дати перебування:</span>
+                                        <strong id="recapDates">15.06.2026 - 22.06.2026</strong>
+                                    </div>
+                                    <div class="recap-info-item">
+                                        <span class="recap-info-label">Тривалість:</span>
+                                        <strong id="recapNights">7 ночей</strong>
+                                    </div>
+                                    <div class="recap-info-item recap-total-row">
+                                        <span class="recap-info-label">Загальна вартість:</span>
+                                        <strong id="recapTotalPrice">6 160 грн</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="wizard-actions-step2">
+                            <button type="button" class="btn-secondary" id="btnBackToStep1">Назад</button>
+                            <button type="submit" class="btn-submit btn-primary">Надіслати запит</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
