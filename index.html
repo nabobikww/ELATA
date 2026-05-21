@@ -518,8 +518,6 @@
     <!-- Booking Modal -->
     <div id="bookingModal" class="modal">
         <div class="modal-overlay"></div>
-        <div id="calendarOverlay" class="calendar-overlay"></div>
-        <div id="inlineCalendarContainer" class="inline-calendar-wrapper hidden"></div>
         <div class="modal-container booking-wizard-container">
             <div class="booking-card wizard-card">
                 <button class="modal-close" id="closeModal">×</button>
@@ -574,9 +572,6 @@
                                         <span class="room-mini-price">від 1 330 грн / ніч</span>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="rooms-mini-list-actions">
-                                <button type="button" class="btn-primary" id="btnGoToStep2Left" disabled>Продовжити</button>
                             </div>
                         </div>
 
@@ -713,6 +708,12 @@
             <img id="lightboxImage" src="" alt="Перегляд фото"
                 style="width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
         </div>
+    </div>
+
+    <!-- Calendar Overlay & Centered Wrapper (outside transformed container for perfect centering) -->
+    <div id="calendarOverlay" class="calendar-overlay"></div>
+    <div id="inlineCalendarWrapper" class="inline-calendar-wrapper hidden">
+        <div id="inlineCalendarContainer"></div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>

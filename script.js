@@ -251,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let fpInline = null;
 
     const btnGoToStep2 = document.getElementById('btnGoToStep2');
-    const btnGoToStep2Left = document.getElementById('btnGoToStep2Left');
     const btnBackToStep1 = document.getElementById('btnBackToStep1');
     const step1Panel = document.getElementById('bookingStep1');
     const step2Panel = document.getElementById('bookingStep2');
@@ -261,30 +260,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setStep2ButtonsDisabled(disabled) {
         if (btnGoToStep2) btnGoToStep2.disabled = disabled;
-        if (btnGoToStep2Left) btnGoToStep2Left.disabled = disabled;
     }
 
     // Toggle calendar popup overlay
     function openCalendar() {
-        const calendarContainer = document.getElementById('inlineCalendarContainer');
+        const calendarWrapper = document.getElementById('inlineCalendarWrapper');
         const calendarOverlay = document.getElementById('calendarOverlay');
         const inspectorPanel = document.querySelector('.room-inspector-panel');
         
-        if (calendarContainer) calendarContainer.classList.remove('hidden');
+        if (calendarWrapper) calendarWrapper.classList.remove('hidden');
         if (calendarOverlay) calendarOverlay.classList.add('active');
         if (inspectorPanel) inspectorPanel.classList.add('calendar-active');
-        
-        if (fpInline) {
-            fpInline.open();
-        }
     }
 
     function closeCalendar() {
-        const calendarContainer = document.getElementById('inlineCalendarContainer');
+        const calendarWrapper = document.getElementById('inlineCalendarWrapper');
         const calendarOverlay = document.getElementById('calendarOverlay');
         const inspectorPanel = document.querySelector('.room-inspector-panel');
         
-        if (calendarContainer) calendarContainer.classList.add('hidden');
+        if (calendarWrapper) calendarWrapper.classList.add('hidden');
         if (calendarOverlay) calendarOverlay.classList.remove('active');
         if (inspectorPanel) inspectorPanel.classList.remove('calendar-active');
     }
@@ -443,7 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkinCol = document.getElementById('checkinCol');
     const checkoutCol = document.getElementById('checkoutCol');
     const calendarOverlay = document.getElementById('calendarOverlay');
-    const inlineCalendarContainer = document.getElementById('inlineCalendarContainer');
+    const inlineCalendarWrapper = document.getElementById('inlineCalendarWrapper');
 
     if (checkinCol && checkoutCol) {
         const onDateInputClick = (e) => {
@@ -461,9 +455,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (inlineCalendarContainer) {
+    if (inlineCalendarWrapper) {
         // Prevent closing when clicking inside the calendar itself
-        inlineCalendarContainer.addEventListener('click', (e) => {
+        inlineCalendarWrapper.addEventListener('click', (e) => {
             e.stopPropagation();
         });
     }
@@ -527,9 +521,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnGoToStep2) {
         btnGoToStep2.addEventListener('click', goToStep2);
-    }
-    if (btnGoToStep2Left) {
-        btnGoToStep2Left.addEventListener('click', goToStep2);
     }
 
     if (btnBackToStep1) {
