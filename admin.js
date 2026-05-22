@@ -186,7 +186,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ---- Cloud Database Hybrid Sync ----
+    let isPushing = false;
+    let isSyncing = false;
+
     async function syncWithCloud() {
+        if (isPushing || isSyncing) return {
+            bookings: JSON.parse(localStorage.getItem('elata_bookings_v2')) || [],
+            blocked_dates: JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || []
+        };
+        isSyncing = true;
         try {
             const res = await fetch('/api/data');
             if (!res.ok) throw new Error('API error');
@@ -232,10 +240,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 bookings: JSON.parse(localStorage.getItem('elata_bookings_v2')) || [],
                 blocked_dates: JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || []
             };
+        } finally {
+            isSyncing = false;
         }
     }
 
     async function pushToCloud() {
+        if (isPushing) return;
+        isPushing = true;
         try {
             // Atomic: read fresh cloud state, apply local changes, write back
             const getRes = await fetch('/api/data');
@@ -243,7 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const cloudData = await getRes.json();
 
             let bookings = cloudData.bookings || [];
-            let blocked_dates = cloudData.blocked_dates || [];
 
             // Apply tombstones to ensure deleted items never come back
             const deletedIds = JSON.parse(localStorage.getItem('elata_deleted_bookings')) || [];
@@ -267,23 +278,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return b;
             });
 
-            // Also apply local blocked_dates
-            const localBlocked = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
-            // Merge: use local blocked dates as authoritative
-            const blockedMap = new Map();
-            blocked_dates.forEach(r => {
-                if (r && r.start && r.end) {
-                    const key = `${r.start}_${r.end}_${r.room || 'Усі номери'}`;
-                    blockedMap.set(key, r);
-                }
-            });
-            localBlocked.forEach(r => {
-                if (r && r.start && r.end) {
-                    const key = `${r.start}_${r.end}_${r.room || 'Усі номери'}`;
-                    blockedMap.set(key, r);
-                }
-            });
-            blocked_dates = Array.from(blockedMap.values());
+            // Set local blocked dates as authoritative (Fixes the zombie resurrection bug)
+            const blocked_dates = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
 
             const putRes = await fetch('/api/data', {
                 method: 'PUT',
@@ -300,6 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (e) {
             console.error("Failed to push to cloud", e);
+        } finally {
+            isPushing = false;
         }
     }
 
@@ -617,11 +615,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Auto Refresh every 10 seconds from cloud
     setInterval(() => {
+        if (isPushing || isSyncing) return;
         // Only refresh if modals are not active to prevent editing interference
         if (!modal.classList.contains('active') && !datesModal.classList.contains('active') && !passwordsModal.classList.contains('active')) {
             syncWithCloud().then(data => {
-                bookings = data.bookings;
-                renderTable();
+                if (data) {
+                    bookings = data.bookings;
+                    renderTable();
+                }
             });
         }
     }, 10000);
