@@ -799,6 +799,65 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoModalText = document.getElementById('infoModalText');
     const infoModalIcon = document.getElementById('infoModalIcon');
 
+    const getRoomFolder = (roomName) => {
+        const normalized = roomName.toLowerCase().trim();
+        if (normalized.includes("двомісний") && !normalized.includes("бюджетний")) return "double";
+        if (normalized.includes("бюджетний")) return "budget";
+        if (normalized.includes("сімейний")) return "family";
+        if (normalized.includes("апартаменти преміум") || normalized.includes("преміум")) return "premium";
+        return "double";
+    };
+
+    const getRoomPhotos = (roomName) => {
+        const folder = getRoomFolder(roomName);
+        if (folder === "double") {
+            return [
+                "rooms/double/photo_2026-05-22_12-36-12.jpg",
+                "rooms/double/photo_2026-05-22_12-36-14.jpg",
+                "rooms/double/photo_2026-05-22_12-36-17.jpg",
+                "rooms/double/photo_2026-05-22_12-36-18.jpg",
+                "rooms/double/photo_2026-05-22_12-36-20.jpg",
+                "rooms/double/photo_2026-05-22_12-36-21.jpg",
+                "rooms/double/photo_2026-05-22_12-36-22.jpg",
+                "rooms/double/photo_2026-05-22_12-36-24.jpg"
+            ];
+        } else if (folder === "family") {
+            return [
+                "rooms/family/IMG_2318.JPG",
+                "rooms/family/IMG_2321.JPG",
+                "rooms/family/IMG_2322.JPG",
+                "rooms/family/IMG_2323.JPG",
+                "rooms/family/IMG_2324.JPG",
+                "rooms/family/IMG_2325.JPG",
+                "rooms/family/IMG_2326.JPG",
+                "rooms/family/IMG_2327.JPG",
+                "rooms/family/IMG_2330.JPG",
+                "rooms/family/IMG_2331.JPG"
+            ];
+        } else if (folder === "premium") {
+            return [
+                "rooms/premium/IMG_2339.JPG",
+                "rooms/premium/IMG_2340.JPG",
+                "rooms/premium/IMG_2341.JPG",
+                "rooms/premium/IMG_2343.JPG",
+                "rooms/premium/IMG_2345.JPG",
+                "rooms/premium/IMG_2346.JPG",
+                "rooms/premium/IMG_9116.PNG",
+                "rooms/premium/IMG_9119.PNG"
+            ];
+        } else if (folder === "budget") {
+            return [
+                "rooms/budget/DSC08414 (2).JPG",
+                "rooms/budget/DSC08417 (2).JPG",
+                "rooms/budget/IMG_2333.JPG",
+                "rooms/budget/IMG_2336.JPG",
+                "rooms/budget/IMG_2337.JPG",
+                "rooms/budget/IMG_2338.JPG"
+            ];
+        }
+        return [];
+    };
+
     const getRoomDetails = (roomName) => {
         const details = {
             "двомісний номер": "Вишуканий затишок для двох. Номер площею 22 м² обладнаний ортопедичним королівським ліжком (King Size), вишуканим текстилем, власною мармуровою ванною кімнатою, ультрачітким Smart-TV, швидкісним Wi-Fi, міні-баром та індивідуальною системою кондиціонування. Ідеальний баланс комфорту та приватності.",
@@ -812,21 +871,46 @@ document.addEventListener('DOMContentLoaded', () => {
         return details[normalized] || "Розкішний номер із бездоганним дизайнерським інтер'єром, обладнаний сучасними зручностями: ортопедичне ліжко King Size, вишукана ванна кімната, Smart-TV, кондиціонер, швидкісний інтернет та міні-бар. Повні деталі та характеристики будуть опубліковані найближчим часом.";
     };
 
-    const showInfoPopup = (type, roomName) => {
+    const showInfoPopup = async (type, roomName) => {
         if (!infoModal) return;
         const displayRoomName = roomName || "номер";
+        const modalContent = infoModal.querySelector('.info-modal-content');
+        const galleryGrid = document.getElementById('infoModalGallery');
         
+        // Reset states
+        if (modalContent) modalContent.classList.remove('is-gallery');
+        if (infoModalIcon) infoModalIcon.classList.remove('hidden');
+        if (infoModalText) infoModalText.classList.remove('hidden');
+        if (galleryGrid) {
+            galleryGrid.classList.add('hidden');
+            galleryGrid.innerHTML = '';
+        }
+        
+        const closeBtnBottom = document.getElementById('closeInfoModalBtn');
+        if (closeBtnBottom) closeBtnBottom.classList.remove('hidden');
+
         if (type === 'photos') {
-            if (infoModalIcon) {
-                infoModalIcon.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--clr-gold); width: 42px; height: 42px;">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                        <circle cx="12" cy="13" r="4"></circle>
-                    </svg>
-                `;
-            }
+            if (modalContent) modalContent.classList.add('is-gallery');
+            if (infoModalIcon) infoModalIcon.classList.add('hidden');
+            if (infoModalText) infoModalText.classList.add('hidden');
+            if (closeBtnBottom) closeBtnBottom.classList.add('hidden');
+
             if (infoModalTitle) infoModalTitle.innerText = `Фотогалерея: ${displayRoomName}`;
-            if (infoModalText) infoModalText.innerText = "Світлини цього номеру зараз проходять професійну обробку, щоб передати кожну деталь нашого вишуканого інтер'єру. Незабаром ми опублікуємо повну оновлену галерею. Дякуємо за терпіння!";
+            
+            if (galleryGrid) {
+                galleryGrid.classList.remove('hidden');
+                const photos = getRoomPhotos(displayRoomName);
+                if (photos.length > 0) {
+                    photos.forEach(photoSrc => {
+                        const item = document.createElement('div');
+                        item.className = 'gallery-item';
+                        item.innerHTML = `<img src="${photoSrc}" alt="${displayRoomName}" loading="lazy" style="cursor: zoom-in;">`;
+                        galleryGrid.appendChild(item);
+                    });
+                } else {
+                    galleryGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--clr-charcoal); text-align: center;">Не знайдено фотографій для цього номера.</p>`;
+                }
+            }
         } else if (type === 'details') {
             if (infoModalIcon) {
                 infoModalIcon.innerHTML = `
@@ -838,7 +922,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             }
             if (infoModalTitle) infoModalTitle.innerText = `Деталі: ${displayRoomName}`;
-            if (infoModalText) infoModalText.innerText = getRoomDetails(displayRoomName);
+            
+            if (infoModalText) {
+                infoModalText.innerText = "Завантаження опису...";
+                const folder = getRoomFolder(displayRoomName);
+                try {
+                    const res = await fetch(`/rooms/${folder}/${encodeURIComponent("Опис номеру.txt")}`);
+                    if (res.ok) {
+                        const text = await res.text();
+                        if (text && text.trim().length > 0) {
+                            infoModalText.innerText = text.trim();
+                        } else {
+                            infoModalText.innerText = getRoomDetails(displayRoomName);
+                        }
+                    } else {
+                        infoModalText.innerText = getRoomDetails(displayRoomName);
+                    }
+                } catch (e) {
+                    infoModalText.innerText = getRoomDetails(displayRoomName);
+                }
+            }
         }
         
         infoModal.classList.add('active');
@@ -848,10 +951,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const hideInfoPopup = () => {
         if (!infoModal) return;
         infoModal.classList.remove('active');
+        const modalContent = infoModal.querySelector('.info-modal-content');
+        if (modalContent) modalContent.classList.remove('is-gallery');
         if (bookingModal && !bookingModal.classList.contains('active')) {
             document.body.classList.remove('modal-open');
         }
     };
+
+    // 7.2 Show More / Less Rooms Catalogs
+    const showMoreRoomsBtn = document.getElementById('showMoreRooms');
+    const extraRoomsGrid = document.getElementById('extraRooms');
+    if (showMoreRoomsBtn && extraRoomsGrid) {
+        showMoreRoomsBtn.addEventListener('click', () => {
+            const isHidden = extraRoomsGrid.style.display === 'none';
+            if (isHidden) {
+                extraRoomsGrid.style.display = 'grid';
+                showMoreRoomsBtn.innerText = 'Побачити менше';
+                const cards = extraRoomsGrid.querySelectorAll('.room-card');
+                cards.forEach(card => {
+                    card.classList.add('active');
+                });
+            } else {
+                extraRoomsGrid.style.display = 'none';
+                showMoreRoomsBtn.innerText = 'Побачити більше';
+                const roomsSection = document.getElementById('rooms');
+                if (roomsSection) {
+                    roomsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    }
 
     // Listeners for main page room cards
     document.querySelectorAll('.room-card .btn-room-photos').forEach(btn => {
@@ -922,7 +1051,8 @@ document.addEventListener('DOMContentLoaded', () => {
             targetImg.closest('.inspector-image-wrap') ||
             targetImg.closest('.room-mini-card') ||
             targetImg.closest('.recap-room-card') ||
-            targetImg.closest('.room-card-image-wrap')
+            targetImg.closest('.room-card-image-wrap') ||
+            targetImg.closest('.gallery-item')
         )) {
             if (lightboxImage && imageModal) {
                 lightboxImage.src = targetImg.src;
