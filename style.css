@@ -920,18 +920,18 @@ p {
     transition: var(--transition-smooth);
     border: 1px solid rgba(197, 168, 128, 0.45);
     background: transparent;
-    color: var(--clr-milk);
+    color: var(--clr-charcoal);
 }
 
 .btn-inspector-outline svg {
-    stroke: var(--clr-champagne);
+    stroke: var(--clr-gold-dark);
     transition: var(--transition-smooth);
 }
 
 .btn-inspector-outline:hover {
-    border-color: var(--clr-champagne);
-    background-color: rgba(255, 255, 255, 0.08);
-    color: var(--clr-milk);
+    border-color: var(--clr-gold-dark);
+    background-color: rgba(197, 168, 128, 0.08);
+    color: var(--clr-obsidian);
 }
 
 .btn-inspector-outline:hover svg {
