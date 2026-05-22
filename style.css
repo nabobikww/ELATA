@@ -1785,6 +1785,8 @@ p {
     background: var(--clr-alabaster);
     color: var(--clr-obsidian);
     transition: var(--transition-smooth);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .booking-form input::placeholder {
@@ -2018,6 +2020,7 @@ body.modal-open {
 .booking-wizard-container {
     max-width: 1200px !important; /* Elegant wide luxury frame */
     width: 70vw !important; /* Occupies exactly 70% of the screen width */
+    min-width: min(950px, 95vw) !important; /* Prevent shrinking and keep both steps identical in width */
     max-height: 97vh !important; /* Expanded more top and bottom */
     overflow-y: auto !important; /* Allow scroll if needed on short viewports, hides scrollbar via webkit rules */
 }
@@ -2424,8 +2427,9 @@ body.modal-open {
     display: grid;
     grid-template-columns: 1.1fr 1fr;
     gap: 2.5rem;
-    align-items: start;
+    align-items: stretch; /* Stretch both columns to match height */
     margin-bottom: 2rem;
+    min-height: 480px; /* Keep height stable and premium, matching Step 1 */
 }
 
 .wizard-card .booking-form .form-group {
@@ -2452,6 +2456,8 @@ body.modal-open {
     color: var(--clr-obsidian);
     transition: var(--transition-smooth);
     height: 46px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .wizard-card .guests-split-row {
@@ -2685,6 +2691,7 @@ body.modal-open {
     .booking-wizard-step2-grid {
         gap: 1.5rem;
         margin-bottom: 1.2rem;
+        min-height: 380px; /* Stable height on shorter desktop viewports */
     }
     
     .wizard-card .booking-form .form-group {
@@ -2696,6 +2703,8 @@ body.modal-open {
         height: 38px;
         padding: 0.5rem 0.8rem;
         font-size: 0.88rem;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .booking-summary-recap {
@@ -3085,14 +3094,14 @@ body.modal-open {
     .booking-wizard-container {
         max-width: 380px !important; /* Extremely snug, premium mobile overlay card */
         width: 92vw !important;
-        max-height: 94vh !important;
+        max-height: 88vh !important; /* Centered nicely, sitting safely above browser navigation bars */
         overflow-y: auto !important; /* Allow scroll so that forms and buttons are fully reachable */
         border-radius: var(--radius-lg) !important;
         margin: auto !important;
     }
     
     .wizard-card {
-        padding: 0.8rem 0.65rem !important; /* Ultra-snug luxury spacing */
+        padding: 0.8rem 0.65rem 4.5rem 0.65rem !important; /* Extra bottom padding so buttons can scroll above browser limits */
     }
 
     .wizard-header {
@@ -3341,6 +3350,7 @@ body.modal-open {
         display: flex !important;
         justify-content: center !important; /* Center the narrow button */
         margin-top: 0.4rem !important;
+        margin-bottom: 1.5rem !important; /* Clearance space at the bottom */
     }
 
     .mini-list-pagination {
@@ -3393,11 +3403,14 @@ body.modal-open {
         padding: 0.6rem 0.8rem !important;
         font-size: 0.85rem !important;
         height: 38px !important; /* Sleek compact fields */
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .booking-wizard-step2-grid {
         grid-template-columns: 1fr !important;
         gap: 0.8rem;
+        min-height: auto !important; /* Let height adapt naturally on mobile */
     }
 
     .guests-split-row {
@@ -3460,6 +3473,7 @@ body.modal-open {
         margin-top: 1rem !important;
         padding-top: 0.8rem !important;
         gap: 0.6rem !important;
+        margin-bottom: 1.5rem !important; /* Clearance space at the bottom */
     }
 
     .wizard-actions-step2 button {
