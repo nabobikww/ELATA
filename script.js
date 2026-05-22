@@ -491,24 +491,68 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Sync horizontal scroll with pagination bullets on mobile (using requestAnimationFrame for instant 60fps responsiveness)
+    let roomsScrollCache = null;
+
+    function cacheRoomsScrollParams() {
+        const list = document.querySelector('.rooms-mini-list');
+        if (!list) return;
+
+        // Ensure container is relative so offsets are local to it
+        list.style.position = 'relative';
+
+        const listWidth = list.clientWidth;
+        const cards = list.querySelectorAll('.room-mini-card');
+        const cardsData = Array.from(cards).map((card, idx) => {
+            return {
+                index: idx,
+                offsetLeft: card.offsetLeft,
+                offsetWidth: card.offsetWidth,
+                cardElement: card
+            };
+        });
+
+        roomsScrollCache = {
+            listWidth,
+            cards: cardsData
+        };
+    }
+
+    // Recalculate layout metrics on resize if the modal is currently active
+    window.addEventListener('resize', () => {
+        const bookingModal = document.getElementById('bookingModal');
+        if (bookingModal && bookingModal.classList.contains('active')) {
+            cacheRoomsScrollParams();
+        }
+    });
+
+    // Sync horizontal scroll with pagination bullets on mobile (using a cached, high-performance, layout-reflow-free lookup)
     const roomsMiniList = document.querySelector('.rooms-mini-list');
     if (roomsMiniList) {
         let isScrolling = false;
+        let scrollTimeout = null;
 
         const updatePagination = () => {
-            const listRect = roomsMiniList.getBoundingClientRect();
-            const listCenter = listRect.left + listRect.width / 2;
+            if (!roomsScrollCache) {
+                cacheRoomsScrollParams();
+                if (!roomsScrollCache) {
+                    isScrolling = false;
+                    return;
+                }
+            }
+
+            const scrollLeft = roomsMiniList.scrollLeft;
+            const containerWidth = roomsScrollCache.listWidth;
+            const containerCenter = scrollLeft + containerWidth / 2;
+
             let closestIndex = 0;
             let minDistance = Infinity;
 
-            roomMiniCards.forEach((card, idx) => {
-                const cardRect = card.getBoundingClientRect();
-                const cardCenter = cardRect.left + cardRect.width / 2;
-                const dist = Math.abs(cardCenter - listCenter);
+            roomsScrollCache.cards.forEach((card) => {
+                const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+                const dist = Math.abs(cardCenter - containerCenter);
                 if (dist < minDistance) {
                     minDistance = dist;
-                    closestIndex = idx;
+                    closestIndex = card.index;
                 }
             });
 
@@ -530,7 +574,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 isScrolling = true;
                 requestAnimationFrame(updatePagination);
             }
-        });
+
+            // Debounce active card selection until scrolling completely settles down
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                if (roomsScrollCache) {
+                    const scrollLeft = roomsMiniList.scrollLeft;
+                    const containerWidth = roomsScrollCache.listWidth;
+                    const containerCenter = scrollLeft + containerWidth / 2;
+
+                    let closestIndex = 0;
+                    let minDistance = Infinity;
+
+                    roomsScrollCache.cards.forEach((card) => {
+                        const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+                        const dist = Math.abs(cardCenter - containerCenter);
+                        if (dist < minDistance) {
+                            minDistance = dist;
+                            closestIndex = card.index;
+                        }
+                    });
+
+                    // Auto-click/select the centered card to sync details
+                    const targetCard = roomMiniCards[closestIndex];
+                    if (targetCard && !targetCard.classList.contains('active')) {
+                        targetCard.click();
+                    }
+                }
+            }, 180); // Smooth debounce delay to avoid Flatpickr thrashing while swiping
+        }, { passive: true });
     }
 
     // Allow clicking on pagination bullets to switch cards
@@ -754,6 +826,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Render immediately using cache
         selectActiveRoom();
+
+        // Cache scroll parameters after DOM metrics render
+        setTimeout(cacheRoomsScrollParams, 100);
 
         // Perform cloud sync in the background to fetch latest real-time dates
         syncWithCloud().then(() => {
