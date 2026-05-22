@@ -673,7 +673,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // 7. Booking Modal Logic
     const bookingModal = document.getElementById('bookingModal');
-    const openModalBtns = document.querySelectorAll('.open-booking, .room-card');
+    const openModalBtns = document.querySelectorAll('.open-booking, .open-booking-for-room');
     const closeModalBtn = document.getElementById('closeModal');
     const modalOverlay = document.querySelector('.modal-overlay');
 
@@ -762,22 +762,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     openModalBtns.forEach(btn => {
         btn.addEventListener('click', (e) => {
-            // If the user clicked on the room image, let the lightbox handle it instead of booking modal
-            if (e.target.closest('.room-card-image-wrap')) {
-                return;
-            }
             e.preventDefault();
+            e.stopPropagation();
             
-            // Check if clicked element or its parent is a room-card
-            const roomCard = e.currentTarget.classList.contains('room-card') ? e.currentTarget : null;
-            let roomName = "";
-            if (roomCard) {
-                const titleEl = roomCard.querySelector('.room-info h3');
-                if (titleEl) {
-                    roomName = titleEl.innerText || titleEl.textContent;
-                }
-            }
-            
+            // Get room name from data attribute
+            const roomName = btn.getAttribute('data-room-name') || "";
             openModal(roomName);
         });
     });
@@ -785,14 +774,133 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
 
-    // Escape key to close modal
+    // Escape key to close modals
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && (bookingModal.classList.contains('active') || imageModal.classList.contains('active'))) {
-            closeModal();
-            imageModal.classList.remove('active');
-            document.body.classList.remove('modal-open');
+        if (e.key === 'Escape') {
+            if (infoModal && infoModal.classList.contains('active')) {
+                hideInfoPopup();
+            } else {
+                if (bookingModal && bookingModal.classList.contains('active')) {
+                    closeModal();
+                }
+                if (imageModal && imageModal.classList.contains('active')) {
+                    imageModal.classList.remove('active');
+                    document.body.classList.remove('modal-open');
+                }
+            }
         }
     });
+
+    // 7.5. Room Details & Photo Info Popups
+    const infoModal = document.getElementById('infoModal');
+    const closeInfoModal = document.getElementById('closeInfoModal');
+    const closeInfoModalBtn = document.getElementById('closeInfoModalBtn');
+    const infoModalTitle = document.getElementById('infoModalTitle');
+    const infoModalText = document.getElementById('infoModalText');
+    const infoModalIcon = document.getElementById('infoModalIcon');
+
+    const getRoomDetails = (roomName) => {
+        const details = {
+            "двомісний номер": "Вишуканий затишок для двох. Номер площею 22 м² обладнаний ортопедичним королівським ліжком (King Size), вишуканим текстилем, власною мармуровою ванною кімнатою, ультрачітким Smart-TV, швидкісним Wi-Fi, міні-баром та індивідуальною системою кондиціонування. Ідеальний баланс комфорту та приватності.",
+            "чотиримісний номер делюкс": "Максимальний простір та комфорт преміум-класу для всієї родини або дружньої компанії. Номер площею 40 м² пропонує велике двоспальне ліжко King Size та зручний розкладний диван преміум-серії. До ваших послуг власна простора ванна, зона відпочинку, кавомашина, Smart-TV та вихід на затишний балкон.",
+            "тримісний номер з терасою": "Ексклюзивний відпочинок із власною терасою, звідки відкривається захоплюючий краєвид на Карпатські вершини. Площа номера 35 м², укомплектований ліжком King Size та додатковим комфортним спальним місцем. Панорамне скління, стильні меблі для відпочинку на терасі та першокласні зручності.",
+            "бюджетний двомісний номер": "Компактний, але неймовірно затишний та функціональний номер площею 18 м². Обладнаний двоспальним ліжком з ортопедичним матрацом, власною душовою кімнатою, телевізором та всіма необхідними аксесуарами для комфортного перебування за вигідною ціною без компромісів із якістю.",
+            "чотиримісний номер преміум": "Розкішний люкс площею 45 м² для поціновувачів бездоганного стилю. Номер розділений на спальну та вітальну зони з дизайнерськими меблями. Обладнаний великим ліжком, сучасною ванною кімнатою з преміальною косметикою, робочим куточком, Smart-TV та панорамними вікнами."
+        };
+        const normalized = roomName.toLowerCase().trim();
+        return details[normalized] || "Розкішний номер із бездоганним дизайнерським інтер'єром, обладнаний сучасними зручностями: ортопедичне ліжко King Size, вишукана ванна кімната, Smart-TV, кондиціонер, швидкісний інтернет та міні-бар. Повні деталі та характеристики будуть опубліковані найближчим часом.";
+    };
+
+    const showInfoPopup = (type, roomName) => {
+        if (!infoModal) return;
+        const displayRoomName = roomName || "номер";
+        
+        if (type === 'photos') {
+            if (infoModalIcon) {
+                infoModalIcon.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--clr-gold); width: 42px; height: 42px;">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                        <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                `;
+            }
+            if (infoModalTitle) infoModalTitle.innerText = `Фотогалерея: ${displayRoomName}`;
+            if (infoModalText) infoModalText.innerText = "Світлини цього номеру зараз проходять професійну обробку, щоб передати кожну деталь нашого вишуканого інтер'єру. Незабаром ми опублікуємо повну оновлену галерею. Дякуємо за терпіння!";
+        } else if (type === 'details') {
+            if (infoModalIcon) {
+                infoModalIcon.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="stroke: var(--clr-gold); width: 42px; height: 42px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                `;
+            }
+            if (infoModalTitle) infoModalTitle.innerText = `Деталі: ${displayRoomName}`;
+            if (infoModalText) infoModalText.innerText = getRoomDetails(displayRoomName);
+        }
+        
+        infoModal.classList.add('active');
+        document.body.classList.add('modal-open');
+    };
+
+    const hideInfoPopup = () => {
+        if (!infoModal) return;
+        infoModal.classList.remove('active');
+        if (bookingModal && !bookingModal.classList.contains('active')) {
+            document.body.classList.remove('modal-open');
+        }
+    };
+
+    // Listeners for main page room cards
+    document.querySelectorAll('.room-card .btn-room-photos').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const roomName = btn.getAttribute('data-room-name') || "";
+            showInfoPopup('photos', roomName);
+        });
+    });
+
+    document.querySelectorAll('.room-card .btn-room-details').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const roomName = btn.getAttribute('data-room-name') || "";
+            showInfoPopup('details', roomName);
+        });
+    });
+
+    // Listeners for booking wizard inspector panel
+    const inspectorBtnPhotos = document.getElementById('inspectorBtnPhotos');
+    if (inspectorBtnPhotos) {
+        inspectorBtnPhotos.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const activeRoomName = document.getElementById('inspectorTitle') ? document.getElementById('inspectorTitle').innerText.trim() : "";
+            showInfoPopup('photos', activeRoomName);
+        });
+    }
+
+    const inspectorBtnDetails = document.getElementById('inspectorBtnDetails');
+    if (inspectorBtnDetails) {
+        inspectorBtnDetails.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const activeRoomName = document.getElementById('inspectorTitle') ? document.getElementById('inspectorTitle').innerText.trim() : "";
+            showInfoPopup('details', activeRoomName);
+        });
+    }
+
+    if (closeInfoModal) closeInfoModal.addEventListener('click', hideInfoPopup);
+    if (closeInfoModalBtn) closeInfoModalBtn.addEventListener('click', hideInfoPopup);
+    if (infoModal) {
+        infoModal.addEventListener('click', (e) => {
+            if (e.target === infoModal) {
+                hideInfoPopup();
+            }
+        });
+    }
     // 8. Image Lightbox Logic
     const imageModal = document.getElementById('imageModal');
     const lightboxImage = document.getElementById('lightboxImage');

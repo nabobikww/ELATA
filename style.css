@@ -829,6 +829,107 @@ p {
     margin-bottom: 0;
 }
 
+/* Room Card Actions */
+.room-actions {
+    margin-top: 1.8rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.room-actions .btn-primary {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+    padding: 0.85rem 1.5rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.room-actions-row {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.btn-room-outline {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0.65rem 1rem;
+    font-size: 0.82rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    border: 1px solid rgba(197, 168, 128, 0.4);
+    background: transparent;
+    color: var(--clr-charcoal);
+}
+
+.btn-room-outline svg {
+    stroke: var(--clr-gold-dark);
+    transition: var(--transition-smooth);
+}
+
+.btn-room-outline:hover {
+    border-color: var(--clr-gold-dark);
+    background-color: rgba(197, 168, 128, 0.08);
+    color: var(--clr-obsidian);
+}
+
+.btn-room-outline:hover svg {
+    transform: scale(1.1);
+}
+
+/* Inspector actions in booking wizard */
+.inspector-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 0.8rem;
+}
+
+.btn-inspector-outline {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0.75rem 1.2rem;
+    font-size: 0.85rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    border: 1px solid rgba(197, 168, 128, 0.45);
+    background: transparent;
+    color: var(--clr-milk);
+}
+
+.btn-inspector-outline svg {
+    stroke: var(--clr-champagne);
+    transition: var(--transition-smooth);
+}
+
+.btn-inspector-outline:hover {
+    border-color: var(--clr-champagne);
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--clr-milk);
+}
+
+.btn-inspector-outline:hover svg {
+    transform: scale(1.1);
+}
+
 /* Decorative sections header image */
 .decorative-section-img {
     width: 110px;
@@ -3354,3 +3455,103 @@ body.modal-open {
         font-size: 0.8rem !important;
     }
 }
+
+/* Styling for Info Modal Popup */
+.info-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(17, 20, 22, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.info-modal.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.info-modal-content {
+    background-color: var(--clr-milk);
+    border: 1px solid rgba(197, 168, 128, 0.3);
+    border-radius: var(--radius-md);
+    padding: 3rem 2.5rem;
+    max-width: 480px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-premium-hover);
+    transform: translateY(30px);
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+}
+
+.info-modal.active .info-modal-content {
+    transform: translateY(0);
+}
+
+.info-modal-close {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.2rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--clr-gold-dark);
+    padding: 5px;
+    transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.info-modal-close:hover {
+    background-color: rgba(197, 168, 128, 0.1);
+    color: var(--clr-obsidian);
+}
+
+.info-modal-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(197, 168, 128, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.info-modal-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: var(--clr-gold-dark);
+}
+
+.info-modal-content h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--clr-obsidian);
+    margin-bottom: 1rem;
+}
+
+.info-modal-content p {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.98rem;
+    color: var(--clr-charcoal);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.info-modal-btn {
+    width: 100%;
+}
+
