@@ -319,12 +319,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             },
             onChange: function(selectedDates) {
-                if (selectedDates.length === 2) {
+                const checkinInputElem = document.getElementById('checkinPlaceholder');
+                const checkoutInputElem = document.getElementById('checkoutPlaceholder');
+                
+                const formatYMD = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+                const formatDateText = (d) => {
+                    return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
+                };
+
+                if (selectedDates.length === 1) {
+                    const start = selectedDates[0];
+                    if (checkinInputElem) {
+                        checkinInputElem.innerText = formatDateText(start);
+                        checkinInputElem.classList.remove('is-placeholder');
+                    }
+                    if (checkoutInputElem) {
+                        checkoutInputElem.innerText = "Оберіть виїзд";
+                        checkoutInputElem.classList.add('is-placeholder');
+                    }
+                    selectedCheckinVal = formatYMD(start);
+                    selectedCheckoutVal = "";
+                    setStep2ButtonsDisabled(true);
+                    dateRecapText.innerText = "Оберіть дату виїзду";
+                } else if (selectedDates.length === 2) {
                     const start = selectedDates[0];
                     const end = selectedDates[1];
 
                     // Standardize local date strings
-                    const formatYMD = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
                     const startStr = formatYMD(start);
                     const endStr = formatYMD(end);
 
@@ -344,12 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     selectedCheckoutVal = endStr;
                     setStep2ButtonsDisabled(false);
 
-                    // Format and populate columns
-                    const formatDateText = (d) => {
-                        return `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getFullYear()}`;
-                    };
-                    const checkinInputElem = document.getElementById('checkinPlaceholder');
-                    const checkoutInputElem = document.getElementById('checkoutPlaceholder');
                     if (checkinInputElem) {
                         checkinInputElem.innerText = formatDateText(start);
                         checkinInputElem.classList.remove('is-placeholder');
