@@ -491,38 +491,45 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Sync horizontal scroll with pagination bullets on mobile
+    // Sync horizontal scroll with pagination bullets on mobile (using requestAnimationFrame for instant 60fps responsiveness)
     const roomsMiniList = document.querySelector('.rooms-mini-list');
     if (roomsMiniList) {
-        let scrollTimeout;
+        let isScrolling = false;
+
+        const updatePagination = () => {
+            const listRect = roomsMiniList.getBoundingClientRect();
+            const listCenter = listRect.left + listRect.width / 2;
+            let closestIndex = 0;
+            let minDistance = Infinity;
+
+            roomMiniCards.forEach((card, idx) => {
+                const cardRect = card.getBoundingClientRect();
+                const cardCenter = cardRect.left + cardRect.width / 2;
+                const dist = Math.abs(cardCenter - listCenter);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestIndex = idx;
+                }
+            });
+
+            // Update active pagination bullet on scroll peek
+            const bullets = document.querySelectorAll('.pagination-bullet');
+            bullets.forEach((bullet, idx) => {
+                if (idx === closestIndex) {
+                    bullet.classList.add('active');
+                } else {
+                    bullet.classList.remove('active');
+                }
+            });
+
+            isScrolling = false;
+        };
+
         roomsMiniList.addEventListener('scroll', () => {
-            clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(() => {
-                const listRect = roomsMiniList.getBoundingClientRect();
-                const listCenter = listRect.left + listRect.width / 2;
-                let closestIndex = 0;
-                let minDistance = Infinity;
-
-                roomMiniCards.forEach((card, idx) => {
-                    const cardRect = card.getBoundingClientRect();
-                    const cardCenter = cardRect.left + cardRect.width / 2;
-                    const dist = Math.abs(cardCenter - listCenter);
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        closestIndex = idx;
-                    }
-                });
-
-                // Update active pagination bullet on scroll peek
-                const bullets = document.querySelectorAll('.pagination-bullet');
-                bullets.forEach((bullet, idx) => {
-                    if (idx === closestIndex) {
-                        bullet.classList.add('active');
-                    } else {
-                        bullet.classList.remove('active');
-                    }
-                });
-            }, 60);
+            if (!isScrolling) {
+                isScrolling = true;
+                requestAnimationFrame(updatePagination);
+            }
         });
     }
 
