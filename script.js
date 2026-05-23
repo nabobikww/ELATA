@@ -973,6 +973,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const displayRoomName = roomName || "номер";
         const modalContent = infoModal.querySelector('.info-modal-content');
         const galleryGrid = document.getElementById('infoModalGallery');
+        const track = galleryGrid ? galleryGrid.querySelector('.gallery-carousel-track') : null;
+        const dotsContainer = galleryGrid ? galleryGrid.querySelector('#galleryDots') : null;
+        const prevBtn = galleryGrid ? galleryGrid.querySelector('#galleryPrevBtn') : null;
+        const nextBtn = galleryGrid ? galleryGrid.querySelector('#galleryNextBtn') : null;
         
         // Reset states
         if (modalContent) modalContent.classList.remove('is-gallery');
@@ -980,7 +984,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (infoModalText) infoModalText.classList.remove('hidden');
         if (galleryGrid) {
             galleryGrid.classList.add('hidden');
-            galleryGrid.innerHTML = '';
+            if (track) track.innerHTML = '';
+            if (dotsContainer) dotsContainer.innerHTML = '';
         }
         
         const closeBtnBottom = document.getElementById('closeInfoModalBtn');
@@ -994,7 +999,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (infoModalTitle) infoModalTitle.innerText = `Фотогалерея: ${displayRoomName}`;
             
-            if (galleryGrid) {
+            if (galleryGrid && track) {
                 galleryGrid.classList.remove('hidden');
                 const photos = getRoomPhotos(displayRoomName);
                 if (photos.length > 0) {
@@ -1002,10 +1007,38 @@ document.addEventListener('DOMContentLoaded', () => {
                         const item = document.createElement('div');
                         item.className = 'gallery-item';
                         item.innerHTML = `<img src="${photoSrc}" alt="${displayRoomName}" loading="lazy" style="cursor: zoom-in;">`;
-                        galleryGrid.appendChild(item);
+                        track.appendChild(item);
                     });
+
+                    // Build indicators (dots) dynamically
+                    if (dotsContainer) {
+                        dotsContainer.innerHTML = '';
+                        photos.forEach((_, idx) => {
+                            const dot = document.createElement('button');
+                            dot.type = 'button';
+                            dot.className = `carousel-dot ${idx === 0 ? 'active' : ''}`;
+                            dot.setAttribute('aria-label', `Перейти до фото ${idx + 1}`);
+                            dot.addEventListener('click', () => {
+                                const slideWidth = track.firstElementChild ? track.firstElementChild.getBoundingClientRect().width : track.clientWidth;
+                                track.scrollTo({ left: idx * slideWidth, behavior: 'smooth' });
+                            });
+                            dotsContainer.appendChild(dot);
+                        });
+                    }
+
+                    // Show or hide controls based on count
+                    const showControls = photos.length > 1;
+                    if (prevBtn) prevBtn.style.display = showControls ? 'flex' : 'none';
+                    if (nextBtn) nextBtn.style.display = showControls ? 'flex' : 'none';
+                    if (dotsContainer) dotsContainer.style.display = showControls ? 'flex' : 'none';
+
+                    // Reset track position to index 0
+                    track.scrollLeft = 0;
                 } else {
-                    galleryGrid.innerHTML = `<p style="grid-column: 1/-1; color: var(--clr-charcoal); text-align: center;">Не знайдено фотографій для цього номера.</p>`;
+                    track.innerHTML = `<p style="color: var(--clr-charcoal); text-align: center; width: 100%; margin: 2rem 0;">Не знайдено фотографій для цього номера.</p>`;
+                    if (prevBtn) prevBtn.style.display = 'none';
+                    if (nextBtn) nextBtn.style.display = 'none';
+                    if (dotsContainer) dotsContainer.style.display = 'none';
                 }
             }
         } else if (type === 'details') {
@@ -1128,33 +1161,151 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // Carousel navigation button and scroll listeners
+    const galleryTrack = document.querySelector('.gallery-carousel-track');
+    const galleryPrevBtn = document.getElementById('galleryPrevBtn');
+    const galleryNextBtn = document.getElementById('galleryNextBtn');
+    const galleryDotsContainer = document.getElementById('galleryDots');
+
+    if (galleryPrevBtn && galleryNextBtn && galleryTrack) {
+        galleryPrevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const slideWidth = galleryTrack.firstElementChild ? galleryTrack.firstElementChild.getBoundingClientRect().width : galleryTrack.clientWidth;
+            galleryTrack.scrollBy({ left: -slideWidth, behavior: 'smooth' });
+        });
+
+        galleryNextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const slideWidth = galleryTrack.firstElementChild ? galleryTrack.firstElementChild.getBoundingClientRect().width : galleryTrack.clientWidth;
+            galleryTrack.scrollBy({ left: slideWidth, behavior: 'smooth' });
+        });
+
+        galleryTrack.addEventListener('scroll', () => {
+            if (!galleryDotsContainer) return;
+            const index = Math.round(galleryTrack.scrollLeft / galleryTrack.clientWidth);
+            const dots = galleryDotsContainer.querySelectorAll('.carousel-dot');
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === index);
+            });
+        });
+    }
     // 8. Image Lightbox Logic
     const imageModal = document.getElementById('imageModal');
     const lightboxImage = document.getElementById('lightboxImage');
     const closeImageModalBtn = document.getElementById('closeImageModal');
+    const lightboxPrevBtn = document.getElementById('lightboxPrevBtn');
+    const lightboxNextBtn = document.getElementById('lightboxNextBtn');
 
     // Style zoom-in cursor initially
-    document.querySelectorAll('.carousel-item img, .triple-card img, .split-image img, .inspector-image-wrap img, .room-mini-card img, .recap-room-card img, .room-card-image-wrap img').forEach(img => {
+    document.querySelectorAll('.carousel-item img, .triple-card img, .split-image img, .inspector-image-wrap img, .room-mini-card img, .recap-room-card img, .room-card-image-wrap img, .gallery-item img').forEach(img => {
         img.style.cursor = 'zoom-in';
     });
+
+    let lightboxImages = [];
+    let lightboxCurrentIndex = 0;
+
+    const updateLightboxImage = () => {
+        if (!lightboxImage || lightboxImages.length === 0) return;
+        
+        // Fading micro-animation
+        lightboxImage.style.opacity = 0;
+        setTimeout(() => {
+            lightboxImage.src = lightboxImages[lightboxCurrentIndex];
+            lightboxImage.style.opacity = 1;
+        }, 120);
+
+        // Update progress line and text badge
+        const progressFill = document.getElementById('lightboxProgressFill');
+        const indicatorText = document.getElementById('lightboxIndicator');
+
+        const total = lightboxImages.length;
+        const currentOneBased = lightboxCurrentIndex + 1;
+
+        if (progressFill) {
+            progressFill.style.width = `${(currentOneBased / total) * 100}%`;
+        }
+        if (indicatorText) {
+            indicatorText.innerText = `${currentOneBased} / ${total}`;
+        }
+
+        // Hide navigation arrows if there is only 1 image
+        if (lightboxPrevBtn && lightboxNextBtn) {
+            const showCtrls = total > 1;
+            lightboxPrevBtn.style.display = showCtrls ? 'flex' : 'none';
+            lightboxNextBtn.style.display = showCtrls ? 'flex' : 'none';
+        }
+    };
+
+    const lightboxNext = () => {
+        if (lightboxImages.length <= 1) return;
+        lightboxCurrentIndex = (lightboxCurrentIndex + 1) % lightboxImages.length;
+        updateLightboxImage();
+    };
+
+    const lightboxPrev = () => {
+        if (lightboxImages.length <= 1) return;
+        lightboxCurrentIndex = (lightboxCurrentIndex - 1 + lightboxImages.length) % lightboxImages.length;
+        updateLightboxImage();
+    };
+
+    if (lightboxPrevBtn) {
+        lightboxPrevBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            lightboxPrev();
+        });
+    }
+
+    if (lightboxNextBtn) {
+        lightboxNextBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            lightboxNext();
+        });
+    }
 
     // Delegate click event globally to support dynamic and cloned carousel elements!
     document.addEventListener('click', (e) => {
         const targetImg = e.target;
-        if (targetImg && targetImg.tagName === 'IMG' && (
-            targetImg.closest('.carousel-item') || 
-            targetImg.closest('.triple-card') || 
-            targetImg.closest('.split-image') ||
-            targetImg.closest('.inspector-image-wrap') ||
-            targetImg.closest('.room-mini-card') ||
-            targetImg.closest('.recap-room-card') ||
-            targetImg.closest('.room-card-image-wrap') ||
-            targetImg.closest('.gallery-item')
-        )) {
-            if (lightboxImage && imageModal) {
-                lightboxImage.src = targetImg.src;
-                imageModal.classList.add('active');
-                document.body.classList.add('modal-open');
+        if (targetImg && targetImg.tagName === 'IMG') {
+            // Check if it's inside one of our allowed gallery containers
+            const container = targetImg.closest('.gallery-carousel-track') || 
+                              targetImg.closest('.carousel-track') || 
+                              targetImg.closest('.room-card-image-wrap') ||
+                              targetImg.closest('.triple-card') || 
+                              targetImg.closest('.split-image') ||
+                              targetImg.closest('.inspector-image-wrap');
+                              
+            if (container) {
+                const imgs = Array.from(container.querySelectorAll('img'));
+                if (imgs.length > 0) {
+                    lightboxImages = imgs.map(img => img.src);
+                    lightboxCurrentIndex = imgs.indexOf(targetImg);
+                    if (lightboxCurrentIndex === -1) lightboxCurrentIndex = 0;
+                    
+                    if (lightboxImage && imageModal) {
+                        updateLightboxImage();
+                        imageModal.classList.add('active');
+                        document.body.classList.add('modal-open');
+                    }
+                    return;
+                }
+            }
+
+            // Isolated/Fallback elements
+            if (targetImg.closest('.carousel-item') || 
+                targetImg.closest('.room-mini-card') || 
+                targetImg.closest('.recap-room-card') || 
+                targetImg.closest('.gallery-item')) {
+                
+                lightboxImages = [targetImg.src];
+                lightboxCurrentIndex = 0;
+                if (lightboxImage && imageModal) {
+                    updateLightboxImage();
+                    imageModal.classList.add('active');
+                    document.body.classList.add('modal-open');
+                }
             }
         }
     });
@@ -1171,7 +1322,41 @@ document.addEventListener('DOMContentLoaded', () => {
             imageModal.classList.remove('active');
             document.body.classList.remove('modal-open');
         });
+        
+        // Touch Swiping logic for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        imageModal.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        imageModal.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const deltaX = touchEndX - touchStartX;
+            if (Math.abs(deltaX) > 50) {
+                if (deltaX < 0) {
+                    lightboxNext(); // swipe left
+                } else {
+                    lightboxPrev(); // swipe right
+                }
+            }
+        }, { passive: true });
     }
+
+    // Keyboard controls for Lightbox
+    document.addEventListener('keydown', (e) => {
+        if (imageModal && imageModal.classList.contains('active')) {
+            if (e.key === 'ArrowRight') {
+                lightboxNext();
+            } else if (e.key === 'ArrowLeft') {
+                lightboxPrev();
+            } else if (e.key === 'Escape') {
+                imageModal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+    });
     // 9. Advanced Scroll Fade Effect (Fade out when leaving viewport)
     const animatedElements = document.querySelectorAll('.reveal, .room-card, .service-card, .split-content, .split-image');
     

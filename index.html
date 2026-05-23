@@ -94,7 +94,7 @@
                 <span class="divider-line right"></span>
             </div>
             <p>Відчуйте гармонію незайманої природи та преміального комфорту в гостьовому будинку <span
-                    style="color: #000; font-weight: 300;">Elata Apart</span>. Ми створили місце, де зупиняється час.
+                    style="color: var(--clr-champagne); font-weight: 500;">Elata Apart</span>. Ми створили місце, де зупиняється час.
             </p>
             <div class="hero-actions">
                 <a href="javascript:void(0)" class="btn-primary open-booking">Забронювати номер</a>
@@ -756,10 +756,33 @@
     <!-- Image Lightbox Modal -->
     <div id="imageModal" class="modal">
         <div class="modal-overlay"></div>
-        <div class="modal-container" style="max-width: 60vw;">
+        <div class="modal-container lightbox-container">
             <button class="modal-close" id="closeImageModal">×</button>
-            <img id="lightboxImage" src="" alt="Перегляд фото"
-                style="width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
+            
+            <!-- Floating navigation buttons -->
+            <button class="lightbox-nav-btn prev" id="lightboxPrevBtn" type="button" aria-label="Попереднє фото">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            
+            <div class="lightbox-viewport">
+                <img id="lightboxImage" src="" alt="Перегляд фото">
+            </div>
+            
+            <button class="lightbox-nav-btn next" id="lightboxNextBtn" type="button" aria-label="Наступне фото">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+            
+            <!-- Progress Tracker ("Повзунок") & Indicator -->
+            <div class="lightbox-footer">
+                <div class="lightbox-progress-container">
+                    <div class="lightbox-progress-fill" id="lightboxProgressFill"></div>
+                </div>
+                <div class="lightbox-indicator" id="lightboxIndicator">1 / 1</div>
+            </div>
         </div>
     </div>
 
@@ -778,7 +801,22 @@
             </div>
             <h3 id="infoModalTitle">Інформація</h3>
             <p id="infoModalText">Текст повідомлення.</p>
-            <div id="infoModalGallery" class="gallery-grid hidden"></div>
+            <div id="infoModalGallery" class="gallery-carousel-container hidden">
+                <div class="gallery-carousel-viewport">
+                    <div class="gallery-carousel-track"></div>
+                </div>
+                <button class="carousel-nav-btn prev" id="galleryPrevBtn" type="button" aria-label="Попереднє фото">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <button class="carousel-nav-btn next" id="galleryNextBtn" type="button" aria-label="Наступне фото">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+                <div class="carousel-dots" id="galleryDots"></div>
+            </div>
             <button class="btn-primary info-modal-btn" id="closeInfoModalBtn" type="button">Зрозуміло</button>
         </div>
     </div>
