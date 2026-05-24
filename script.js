@@ -1148,13 +1148,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Listeners for main page room cards
+    // Listeners for main page room cards (Direct full-screen Lightbox)
     document.querySelectorAll('.room-card .btn-room-photos').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             const roomName = btn.getAttribute('data-room-name') || "";
-            showInfoPopup('photos', roomName);
+            const photos = getRoomPhotos(roomName);
+            openLightbox(photos, 0);
         });
     });
 
@@ -1167,14 +1168,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Listeners for booking wizard inspector panel
+    // Listeners for booking wizard inspector panel (Direct full-screen Lightbox)
     const inspectorBtnPhotos = document.getElementById('inspectorBtnPhotos');
     if (inspectorBtnPhotos) {
         inspectorBtnPhotos.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             const activeRoomName = document.getElementById('inspectorTitle') ? document.getElementById('inspectorTitle').innerText.trim() : "";
-            showInfoPopup('photos', activeRoomName);
+            const photos = getRoomPhotos(activeRoomName);
+            openLightbox(photos, 0);
         });
     }
 
@@ -1293,6 +1295,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const showCtrls = total > 1;
             lightboxPrevBtn.style.display = showCtrls ? 'flex' : 'none';
             lightboxNextBtn.style.display = showCtrls ? 'flex' : 'none';
+        }
+    };
+
+    const openLightbox = (images, startIndex = 0) => {
+        if (!images || images.length === 0) return;
+        lightboxImages = images;
+        lightboxCurrentIndex = startIndex;
+        if (lightboxImage && imageModal) {
+            updateLightboxImage();
+            imageModal.classList.add('active');
+            document.body.classList.add('modal-open');
         }
     };
 
