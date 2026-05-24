@@ -1253,7 +1253,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // 8. Image Lightbox Logic
     const imageModal = document.getElementById('imageModal');
-    const lightboxImage = document.getElementById('lightboxImage');
+    const lightboxTrack = document.getElementById('lightboxTrack');
     const closeImageModalBtn = document.getElementById('closeImageModal');
     const lightboxPrevBtn = document.getElementById('lightboxPrevBtn');
     const lightboxNextBtn = document.getElementById('lightboxNextBtn');
@@ -1266,15 +1266,22 @@ document.addEventListener('DOMContentLoaded', () => {
     let lightboxImages = [];
     let lightboxCurrentIndex = 0;
 
+    const populateLightboxTrack = () => {
+        if (!lightboxTrack) return;
+        lightboxTrack.innerHTML = '';
+        lightboxImages.forEach(src => {
+            const slide = document.createElement('div');
+            slide.className = 'lightbox-slide';
+            slide.innerHTML = `<img src="${src}" alt="Перегляд фото">`;
+            lightboxTrack.appendChild(slide);
+        });
+    };
+
     const updateLightboxImage = () => {
-        if (!lightboxImage || lightboxImages.length === 0) return;
+        if (!lightboxTrack || lightboxImages.length === 0) return;
         
-        // Fading micro-animation
-        lightboxImage.style.opacity = 0;
-        setTimeout(() => {
-            lightboxImage.src = lightboxImages[lightboxCurrentIndex];
-            lightboxImage.style.opacity = 1;
-        }, 120);
+        // Buttery-smooth horizontal slide transition!
+        lightboxTrack.style.transform = `translateX(-${lightboxCurrentIndex * 100}%)`;
 
         // Update active dots and text badge
         const indicatorText = document.getElementById('lightboxIndicator');
@@ -1328,7 +1335,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!images || images.length === 0) return;
         lightboxImages = images;
         lightboxCurrentIndex = startIndex;
-        if (lightboxImage && imageModal) {
+        
+        populateLightboxTrack();
+        
+        if (lightboxTrack && imageModal) {
             updateLightboxImage();
             imageModal.classList.add('active');
             document.body.classList.add('modal-open');
@@ -1389,7 +1399,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     lightboxCurrentIndex = lightboxImages.indexOf(targetImg.src);
                     if (lightboxCurrentIndex === -1) lightboxCurrentIndex = 0;
                     
-                    if (lightboxImage && imageModal) {
+                    populateLightboxTrack();
+                    
+                    if (lightboxTrack && imageModal) {
                         updateLightboxImage();
                         imageModal.classList.add('active');
                         document.body.classList.add('modal-open');
@@ -1406,7 +1418,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 lightboxImages = [targetImg.src];
                 lightboxCurrentIndex = 0;
-                if (lightboxImage && imageModal) {
+                
+                populateLightboxTrack();
+                
+                if (lightboxTrack && imageModal) {
                     updateLightboxImage();
                     imageModal.classList.add('active');
                     document.body.classList.add('modal-open');

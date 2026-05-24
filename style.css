@@ -3890,23 +3890,42 @@ body.modal-open {
 .lightbox-viewport {
     position: relative;
     max-height: 80vh;
+    width: 80vw;
+    max-width: 1050px;
+    aspect-ratio: 16 / 10;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.7);
     border: 1px solid rgba(197, 168, 128, 0.25);
     background-color: #0b0c0e;
+}
+
+.lightbox-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
+
+.lightbox-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    position: relative;
 }
 
-#lightboxImage {
-    max-height: 80vh;
-    width: auto;
+.lightbox-slide img {
+    max-height: 100%;
     max-width: 100%;
+    width: auto;
+    height: auto;
     object-fit: contain;
     display: block;
-    transition: opacity 0.25s ease-in-out;
 }
 
 /* Lightbox Navigation Buttons */
@@ -4025,6 +4044,12 @@ body.modal-open {
         width: 95vw !important;
     }
     
+    .lightbox-viewport {
+        width: 85vw;
+        aspect-ratio: auto;
+        height: 60vh;
+    }
+    
     .lightbox-nav-btn.prev {
         left: 20px;
     }
@@ -4049,9 +4074,12 @@ body.modal-open {
         right: 15px;
     }
     .lightbox-viewport {
+        width: 95vw;
         max-height: 70vh;
+        height: auto;
+        aspect-ratio: auto;
     }
-    #lightboxImage {
+    .lightbox-slide img {
         max-height: 70vh;
     }
 }
