@@ -143,8 +143,14 @@ p {
 .badge {
     display: inline-block;
     padding: 0.6rem 1.6rem;
-    background: linear-gradient(135deg, var(--clr-gold-dark) 0%, var(--clr-gold-light) 30%, var(--accent-color) 50%, var(--clr-gold-light) 70%, var(--clr-gold-dark) 100%);
-    background-size: 200% auto;
+    background: linear-gradient(120deg, 
+        #9E835B 0%, 
+        #C5A880 25%, 
+        #E6D3B8 50%, 
+        #C5A880 75%, 
+        #9E835B 100%
+    );
+    background-size: 400% 100%;
     color: var(--clr-milk);
     border-radius: 50px;
     font-weight: 600;
@@ -153,21 +159,39 @@ p {
     text-transform: uppercase;
     letter-spacing: 0.22em;
     font-family: 'Montserrat', sans-serif;
-    box-shadow: 0 8px 25px rgba(197, 168, 128, 0.35);
-    animation: luxuryBadgeShimmer 4s linear infinite; /* Real-time liquid gold shimmer */
-    transition: var(--transition-smooth);
+    box-shadow: 0 8px 20px rgba(158, 131, 91, 0.25);
+    position: relative;
+    overflow: hidden;
+    animation: goldenShimmer 8s infinite linear;
 }
 
-@keyframes luxuryBadgeShimmer {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+/* Metallic Light Reflection Sheen Sweeping Sweep */
+.badge::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    transform: skewX(-25deg);
+    animation: sheenSweep 4.5s infinite ease-in-out;
+}
+
+@keyframes goldenShimmer {
+    0% { background-position: 100% 0%; }
+    100% { background-position: 0% 0%; }
+}
+
+@keyframes sheenSweep {
+    0% { left: -150%; }
+    30% { left: 150%; }
+    100% { left: 150%; }
 }
 
 /* --- Dynamic Scroll Reveal --- */
