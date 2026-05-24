@@ -900,6 +900,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoModalText = document.getElementById('infoModalText');
     const infoModalIcon = document.getElementById('infoModalIcon');
 
+    // Ultra-smooth customized cubic ease-out scroll animation for room photos carousel
+    const animateScrollLeft = (element, target, duration = 650) => {
+        const start = element.scrollLeft;
+        const change = target - start;
+        const startTime = performance.now();
+
+        const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Cubic ease-out curve for premium luxury momentum
+            const easeOutCubic = (t) => (--t) * t * t + 1;
+            
+            element.scrollLeft = start + change * easeOutCubic(progress);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+
+        requestAnimationFrame(animate);
+    };
+
     const getRoomFolder = (roomName) => {
         const normalized = roomName.toLowerCase().trim();
         if (normalized.includes("двомісний") && !normalized.includes("бюджетний")) return "double";
@@ -1010,7 +1033,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     photos.forEach(photoSrc => {
                         const item = document.createElement('div');
                         item.className = 'gallery-item';
-                        item.innerHTML = `<img src="${photoSrc}" alt="${displayRoomName}" loading="lazy" style="cursor: zoom-in;">`;
+                        item.innerHTML = `<img src="${photoSrc}" alt="${displayRoomName}" loading="eager" style="cursor: zoom-in;">`;
                         track.appendChild(item);
                     });
 
@@ -1024,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             dot.setAttribute('aria-label', `Перейти до фото ${idx + 1}`);
                             dot.addEventListener('click', () => {
                                 const slideWidth = track.firstElementChild ? track.firstElementChild.getBoundingClientRect().width : track.clientWidth;
-                                track.scrollTo({ left: idx * slideWidth, behavior: 'smooth' });
+                                animateScrollLeft(track, idx * slideWidth, 650);
                             });
                             dotsContainer.appendChild(dot);
                         });
@@ -1176,13 +1199,16 @@ document.addEventListener('DOMContentLoaded', () => {
         galleryPrevBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const slideWidth = galleryTrack.firstElementChild ? galleryTrack.firstElementChild.getBoundingClientRect().width : galleryTrack.clientWidth;
-            galleryTrack.scrollBy({ left: -slideWidth, behavior: 'smooth' });
+            const targetScroll = Math.max(0, galleryTrack.scrollLeft - slideWidth);
+            animateScrollLeft(galleryTrack, targetScroll, 650);
         });
 
         galleryNextBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const slideWidth = galleryTrack.firstElementChild ? galleryTrack.firstElementChild.getBoundingClientRect().width : galleryTrack.clientWidth;
-            galleryTrack.scrollBy({ left: slideWidth, behavior: 'smooth' });
+            const maxScroll = galleryTrack.scrollWidth - galleryTrack.clientWidth;
+            const targetScroll = Math.min(maxScroll, galleryTrack.scrollLeft + slideWidth);
+            animateScrollLeft(galleryTrack, targetScroll, 650);
         });
 
         galleryTrack.addEventListener('scroll', () => {
@@ -1194,6 +1220,26 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
     }
+
+    // Eager preloader helper for photos
+    const preloadImage = (src) => {
+        const img = new Image();
+        img.src = src;
+    };
+
+    // Preload room photos on card hover for instant opening
+    document.querySelectorAll('.room-card').forEach(card => {
+        card.addEventListener('mouseenter', () => {
+            const btn = card.querySelector('.btn-room-photos');
+            if (btn) {
+                const roomName = btn.getAttribute('data-room-name') || "";
+                const photos = getRoomPhotos(roomName);
+                photos.forEach(photoSrc => {
+                    preloadImage(photoSrc);
+                });
+            }
+        }, { once: true }); // Only run once per card hover to save bandwidth
+    });
     // 8. Image Lightbox Logic
     const imageModal = document.getElementById('imageModal');
     const lightboxImage = document.getElementById('lightboxImage');
