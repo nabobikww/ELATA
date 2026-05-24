@@ -2150,7 +2150,7 @@ body.modal-open {
     font-family: 'Playfair Display', serif;
     font-weight: 600;
     margin-bottom: 3px;
-    color: var(--clr-obsidian);
+    color: var(--text-primary);
 }
 
 .room-mini-price {
@@ -2310,7 +2310,7 @@ body.modal-open {
 }
 
 .date-placeholder-val.is-placeholder {
-    color: rgba(28, 30, 32, 0.35); /* Elegant light gray for example dates */
+    color: rgba(250, 248, 245, 0.45); /* Elegant translucent light cream for example dates */
     font-weight: 400;
 }
 
@@ -2392,7 +2392,7 @@ body.modal-open {
 /* --- Disabled Button State Overrides --- */
 .btn-primary:disabled {
     background: rgba(197, 168, 128, 0.15) !important;
-    color: rgba(28, 30, 32, 0.3) !important;
+    color: rgba(250, 248, 245, 0.45) !important;
     border: 1px solid rgba(197, 168, 128, 0.15) !important;
     box-shadow: none !important;
     cursor: not-allowed;
@@ -2879,9 +2879,10 @@ body.modal-open {
     }
 
     .navbar {
-        background: var(--clr-alabaster) !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
+        background: rgba(10, 12, 14, 0.95) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border-bottom: 1.5px solid rgba(197, 168, 128, 0.25) !important;
         transition: none !important;
     }
 
