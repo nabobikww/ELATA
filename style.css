@@ -205,7 +205,7 @@ p {
     transition: transform 1.2s cubic-bezier(0.85, 0, 0.15, 1);
 }
 
-.preloader.hidden {
+.preloader.preloader-hidden {
     transform: translateY(-100%);
     pointer-events: none;
 }
@@ -2287,8 +2287,8 @@ body.modal-open {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: var(--clr-alabaster);
-    border: 1px solid rgba(197, 168, 128, 0.2);
+    background: #000000 !important; /* Strict pure black background */
+    border: 1px solid rgba(197, 168, 128, 0.25);
     padding: 0.5rem 1rem;
     border-radius: var(--radius-sm);
     transition: var(--transition-smooth);
@@ -2296,21 +2296,26 @@ body.modal-open {
 }
 
 .date-input-col:hover .date-input-box {
-    border-color: var(--clr-champagne);
-    background: var(--bg-secondary);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+    border-color: var(--clr-champagne) !important;
+    background: #131619 !important; /* Graphite black on hover */
+    box-shadow: 0 4px 12px rgba(197, 168, 128, 0.15);
 }
 
 .date-placeholder-val {
     font-size: 0.92rem;
     font-family: 'Outfit', sans-serif;
-    color: var(--text-primary);
-    font-weight: 500;
+    font-weight: 600;
     transition: var(--transition-smooth);
+    color: var(--clr-gold-light); /* Fallback color for standard rendering */
+    background: linear-gradient(135deg, #ffffff 0%, #E6D3B8 50%, #C5A880 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
 }
 
 .date-placeholder-val.is-placeholder {
-    color: rgba(250, 248, 245, 0.45); /* Elegant translucent light cream for example dates */
+    opacity: 0.45; /* Beautifully translucent gold-white gradient for placeholder state */
     font-weight: 400;
 }
 
@@ -2682,10 +2687,12 @@ body.modal-open {
     .date-input-box {
         height: 38px;
         padding: 0.4rem 0.8rem;
+        background: #000000 !important;
     }
     
     .date-placeholder-val {
         font-size: 0.85rem;
+        display: inline-block;
     }
     
     .date-recap {
@@ -3322,10 +3329,12 @@ body.modal-open {
         padding: 0.2rem 0.4rem !important;
         width: 100% !important;
         box-sizing: border-box !important;
+        background: #000000 !important;
     }
 
     .date-placeholder-val {
         font-size: 0.78rem !important;
+        display: inline-block !important;
     }
 
     .calendar-input-icon {

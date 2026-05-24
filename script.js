@@ -97,8 +97,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const preloader = document.querySelector('.preloader');
     if (preloader) {
         setTimeout(() => {
-            preloader.classList.add('hidden');
+            preloader.classList.add('preloader-hidden');
         }, 800); // Small delay to show brand logo
+
+        preloader.addEventListener('transitionend', () => {
+            preloader.style.display = 'none';
+        });
     }
 
     // 2. Booking Form Simulation
