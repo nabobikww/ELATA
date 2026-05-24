@@ -1270,7 +1270,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const targetImg = e.target;
         if (targetImg && targetImg.tagName === 'IMG') {
             // Check if it's inside one of our allowed gallery containers
-            const container = targetImg.closest('.gallery-carousel-track') || 
+            const container = targetImg.closest('.photo-carousel') ||
+                              targetImg.closest('.gallery-carousel-track') || 
                               targetImg.closest('.carousel-track') || 
                               targetImg.closest('.room-card-image-wrap') ||
                               targetImg.closest('.triple-card') || 
@@ -1278,10 +1279,16 @@ document.addEventListener('DOMContentLoaded', () => {
                               targetImg.closest('.inspector-image-wrap');
                               
             if (container) {
-                const imgs = Array.from(container.querySelectorAll('img'));
+                let imgs = Array.from(container.querySelectorAll('img'));
+                // Filter out infinite scroll cloned items to prevent duplicating entries in Lightbox
+                if (container.closest('.photo-carousel') || container.classList.contains('photo-carousel')) {
+                    imgs = imgs.filter(img => !img.closest('.is-clone'));
+                }
+                
                 if (imgs.length > 0) {
                     lightboxImages = imgs.map(img => img.src);
-                    lightboxCurrentIndex = imgs.indexOf(targetImg);
+                    // Match by source URL to support cloned DOM elements perfectly
+                    lightboxCurrentIndex = lightboxImages.indexOf(targetImg.src);
                     if (lightboxCurrentIndex === -1) lightboxCurrentIndex = 0;
                     
                     if (lightboxImage && imageModal) {
