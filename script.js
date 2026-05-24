@@ -1276,18 +1276,44 @@ document.addEventListener('DOMContentLoaded', () => {
             lightboxImage.style.opacity = 1;
         }, 120);
 
-        // Update progress line and text badge
-        const progressFill = document.getElementById('lightboxProgressFill');
+        // Update active dots and text badge
         const indicatorText = document.getElementById('lightboxIndicator');
-
         const total = lightboxImages.length;
         const currentOneBased = lightboxCurrentIndex + 1;
 
-        if (progressFill) {
-            progressFill.style.width = `${(currentOneBased / total) * 100}%`;
-        }
         if (indicatorText) {
             indicatorText.innerText = `${currentOneBased} / ${total}`;
+        }
+
+        // Handle luxury dots indicators that expand when active
+        const dotsContainer = document.getElementById('lightboxDots');
+        if (dotsContainer) {
+            // Rebuild dots if count is different or empty
+            if (dotsContainer.children.length !== total) {
+                dotsContainer.innerHTML = '';
+                for (let i = 0; i < total; i++) {
+                    const dot = document.createElement('span');
+                    dot.className = `lightbox-dot ${i === lightboxCurrentIndex ? 'active' : ''}`;
+                    dot.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        lightboxCurrentIndex = i;
+                        updateLightboxImage();
+                    });
+                    dotsContainer.appendChild(dot);
+                }
+            } else {
+                // Just update the active class on existing dots
+                Array.from(dotsContainer.children).forEach((dot, i) => {
+                    if (i === lightboxCurrentIndex) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+            // Hide the dots container entirely if there is only 1 photo
+            dotsContainer.style.display = total > 1 ? 'flex' : 'none';
         }
 
         // Hide navigation arrows if there is only 1 image
