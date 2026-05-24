@@ -697,6 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             menuToggle.classList.toggle('active');
             mobileNavDropdown.classList.toggle('active');
+            if (header) header.classList.toggle('menu-open');
         });
 
         // Close menu when clicking a link
@@ -704,6 +705,7 @@ document.addEventListener('DOMContentLoaded', () => {
             link.addEventListener('click', () => {
                 menuToggle.classList.remove('active');
                 mobileNavDropdown.classList.remove('active');
+                if (header) header.classList.remove('menu-open');
             });
         });
 
@@ -712,6 +714,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!menuToggle.contains(e.target) && !mobileNavDropdown.contains(e.target)) {
                 menuToggle.classList.remove('active');
                 mobileNavDropdown.classList.remove('active');
+                if (header) header.classList.remove('menu-open');
             }
         });
     }
@@ -727,14 +730,20 @@ document.addEventListener('DOMContentLoaded', () => {
         // Skip shrinking on mobile viewports to prevent layout reflow / glitching
         if (window.innerWidth <= 768) {
             header.classList.remove('shrunk');
-            return;
+        } else {
+            // Header shrinking (desktop height transition)
+            if (currentScroll > 50) {
+                header.classList.add('shrunk');
+            } else {
+                header.classList.remove('shrunk');
+            }
         }
 
-        // Header shrinking
-        if (currentScroll > 50) {
-            header.classList.add('shrunk');
+        // Header scrolled state (background black transition on both mobile & desktop)
+        if (currentScroll > 20) {
+            header.classList.add('scrolled');
         } else {
-            header.classList.remove('shrunk');
+            header.classList.remove('scrolled');
         }
     });
 

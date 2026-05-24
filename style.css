@@ -359,13 +359,14 @@ p {
 
 /* --- Frosted-Glass Navbar --- */
 .navbar {
-    background: rgba(10, 12, 14, 0.85);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
-    position: sticky;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    position: fixed;
+    width: 100%;
     top: 0;
     z-index: 9999;
-    border-bottom: 1px solid rgba(197, 168, 128, 0.15);
+    border-bottom: 1px solid transparent;
     transition: var(--transition-smooth);
 }
 
@@ -377,9 +378,13 @@ p {
     transition: var(--transition-smooth);
 }
 
-.navbar.shrunk {
-    background: rgba(10, 12, 14, 0.95);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+.navbar.scrolled,
+.navbar.menu-open {
+    background: rgba(10, 12, 14, 0.95) !important;
+    backdrop-filter: blur(25px) !important;
+    -webkit-backdrop-filter: blur(25px) !important;
+    border-bottom: 1px solid rgba(197, 168, 128, 0.15) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
 }
 
 .navbar.shrunk .nav-container {
@@ -485,7 +490,7 @@ p {
 /* --- Cinematic Hero Section --- */
 .hero {
     position: relative;
-    height: calc(100vh - 96px);
+    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -532,11 +537,11 @@ p {
     left: 0;
     width: 100%;
     height: 100%;
-    /* Elegant premium dark overlay */
+    /* Elegant premium dark overlay - lightened for vibrant hero photo visibility */
     background: linear-gradient(to bottom, 
-                rgba(10, 12, 14, 0.95) 0%, 
-                rgba(10, 12, 14, 0.7) 40%, 
-                rgba(10, 12, 14, 0.92) 100%);
+                rgba(10, 12, 14, 0.5) 0%, 
+                rgba(10, 12, 14, 0.25) 40%, 
+                rgba(10, 12, 14, 0.65) 100%);
     z-index: 1;
 }
 
@@ -2910,16 +2915,26 @@ body.modal-open {
     }
 
     .navbar {
+        position: fixed !important;
+        width: 100% !important;
+        background: transparent !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border-bottom: 1px solid transparent !important;
+        transition: var(--transition-smooth) !important;
+    }
+
+    .navbar.scrolled,
+    .navbar.menu-open {
         background: rgba(10, 12, 14, 0.95) !important;
         backdrop-filter: blur(12px) !important;
         -webkit-backdrop-filter: blur(12px) !important;
         border-bottom: 1.5px solid rgba(197, 168, 128, 0.25) !important;
-        transition: none !important;
     }
 
     .nav-container {
         height: 70px !important;
-        transition: none !important;
+        transition: var(--transition-smooth) !important;
     }
 
     .logo img {
@@ -2979,7 +2994,7 @@ body.modal-open {
     }
 
     .hero {
-        height: calc(100vh - 70px);
+        height: 100vh;
     }
 
     .decorative-section-img {
