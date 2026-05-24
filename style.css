@@ -3015,6 +3015,11 @@ body.modal-open {
         text-align: center;
     }
 
+    .hero .badge {
+        position: relative !important;
+        top: 25px !important; /* Shift the badge down visually on mobile screens */
+    }
+
     .hero-title-static {
         font-size: 2.5rem;
     }
