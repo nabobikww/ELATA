@@ -3022,6 +3022,13 @@ body.modal-open {
 
     .hero-title-static {
         font-size: 2.5rem;
+        position: relative !important;
+        top: 15px !important; /* Shift the title down visually on mobile screens */
+    }
+
+    .premium-divider {
+        position: relative !important;
+        top: 15px !important; /* Shift the divider line down visually on mobile screens */
     }
 
     .hero-content p {
