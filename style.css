@@ -1,6 +1,6 @@
 /* 
 ==================================================
-  DESIGN SYSTEM: Elata Apart Skhidnytsia
+  DESIGN SYSTEM: Elata Aparts Skhidnytsia
   STYLE: Ultra-Premium Luxury / Editorial Serifs / Satin Gold & Alabaster
   CREATIVE DIRECTION: Elite, Atmospheric, Cinematic Responsive Experience
 ==================================================
@@ -535,6 +535,7 @@ p {
     justify-content: center;
     overflow: hidden;
     background-color: var(--clr-alabaster);
+    padding-top: 96px;
 }
 
 .hero-bg {
@@ -728,12 +729,13 @@ p {
 
 .split-image img {
     width: 100%;
-    height: 560px;
+    height: 560px; /* Restored back to original taller height to show full photo details */
     object-fit: cover;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-premium);
     position: relative;
     z-index: 1;
+    transition: var(--transition-smooth);
 }
 
 .split-image:hover::after {
@@ -1317,6 +1319,44 @@ p {
 .reviews {
     padding: 7.5rem 0;
     background-color: var(--bg-secondary);
+    position: relative;
+    overflow: hidden;
+}
+
+.reviews-bg-video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    min-width: 100%;
+    min-height: 100%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.reviews-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Vertical fading mask: blends smoothly with adjacent dark sections */
+    background: linear-gradient(
+        to bottom,
+        var(--bg-primary) 0%,
+        rgba(10, 12, 14, 0.75) 20%,
+        rgba(10, 12, 14, 0.75) 80%,
+        var(--bg-primary) 100%
+    );
+    z-index: 1;
+}
+
+.reviews .container {
+    position: relative;
+    z-index: 2;
 }
 
 .review-grid {
@@ -1325,15 +1365,18 @@ p {
     gap: 2.5rem;
 }
 
-.review-card {
-    background-color: var(--bg-secondary);
+.reviews .review-card {
+    background-color: rgba(19, 22, 25, 0.7); /* Elite graphite glassmorphism */
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     padding: 3.5rem 2.8rem;
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-premium);
     transition: var(--transition-smooth);
     position: relative;
-    border: 1px solid rgba(197, 168, 128, 0.18);
+    border: 1px solid rgba(197, 168, 128, 0.25);
     overflow: hidden;
+    z-index: 2;
 }
 
 /* Luxury Watermark quote */
@@ -1486,7 +1529,7 @@ p {
 .fresco-container {
     height: 240px;
     width: 100%;
-    background-image: url('fresco_footer.png');
+    background-image: url('fresco_footer.webp');
     background-size: cover;
     background-position: center;
     background-repeat: repeat-x;
@@ -2218,7 +2261,7 @@ body.modal-open {
     font-family: 'Playfair Display', serif;
     font-weight: 600;
     margin-bottom: 3px;
-    color: var(--text-primary);
+    color: var(--clr-champagne) !important;
 }
 
 .room-mini-price {
@@ -2293,6 +2336,7 @@ body.modal-open {
 .inspector-title-row h3 {
     margin-bottom: 0;
     font-size: 1.45rem;
+    color: var(--clr-champagne) !important;
 }
 
 .inspector-price-tag {
@@ -2374,11 +2418,7 @@ body.modal-open {
     font-family: 'Outfit', sans-serif;
     font-weight: 600;
     transition: var(--transition-smooth);
-    color: var(--clr-gold-light); /* Fallback color for standard rendering */
-    background: linear-gradient(135deg, #ffffff 0%, #E6D3B8 50%, #C5A880 100%) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
+    color: var(--clr-champagne) !important;
     display: inline-block;
 }
 
@@ -2595,6 +2635,7 @@ body.modal-open {
     font-family: 'Playfair Display', serif;
     font-weight: 600;
     margin-bottom: 4px;
+    color: var(--clr-champagne) !important;
 }
 
 #recapRoomPrice {
@@ -3033,7 +3074,12 @@ body.modal-open {
     }
 
     .hero {
-        height: 100vh;
+        height: auto !important;
+        min-height: 100vh;
+        padding-top: 110px !important;
+        padding-bottom: 40px !important;
+        display: flex;
+        align-items: center;
     }
 
     .decorative-section-img {
@@ -3052,34 +3098,40 @@ body.modal-open {
 
     .hero-content {
         text-align: center;
+        padding: 0 1rem;
     }
 
     .hero .badge {
-        position: relative !important;
-        top: 25px !important; /* Shift the badge down visually on mobile screens */
+        display: inline-block !important;
+        padding: 0.7rem 1.15rem !important;
+        font-size: 0.7rem !important;
+        margin-bottom: 1.3rem !important;
+        letter-spacing: 0.18em !important;
     }
 
     .hero-title-static {
-        font-size: 2.5rem;
-        position: relative !important;
-        top: 15px !important; /* Shift the title down visually on mobile screens */
+        font-size: 2.4rem !important;
+        margin-bottom: 1rem !important;
+        line-height: 1.25 !important;
     }
 
     .premium-divider {
-        position: relative !important;
-        top: 15px !important; /* Shift the divider line down visually on mobile screens */
+        margin-bottom: 1.2rem !important;
     }
 
     .hero-content p {
-        font-size: 1.25rem;
+        font-size: 1.15rem !important;
+        line-height: 1.6 !important;
+        margin-bottom: 1.8rem !important;
+        padding: 0 0.5rem;
     }
 
     .hero-actions {
         flex-direction: column;
-        gap: 1rem;
+        gap: 0.9rem;
         width: 100%;
-        max-width: 320px;
-        margin: 1.5rem auto 0;
+        max-width: 300px;
+        margin: 0 auto;
     }
 
     .hero-actions a {
@@ -3621,7 +3673,6 @@ body.modal-open {
     pointer-events: none;
     transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .info-modal.active {
     opacity: 1;
     pointer-events: auto;
@@ -3630,15 +3681,20 @@ body.modal-open {
 .info-modal-content {
     background-color: var(--bg-secondary);
     border: 1px solid rgba(197, 168, 128, 0.3);
+    border-top: 4px solid var(--clr-champagne); /* Luxury gold top line */
     border-radius: var(--radius-md);
     padding: 3rem 2.5rem;
     max-width: 480px;
+    max-height: 90vh; /* Set maximum height to fit screen */
     width: 90%;
     text-align: center;
     box-shadow: var(--shadow-premium-hover);
     transform: translateY(30px);
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden; /* Clips the top border to match the card's rounded corners */
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .info-modal.active .info-modal-content {
@@ -3667,14 +3723,7 @@ body.modal-open {
 }
 
 .info-modal-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background-color: rgba(197, 168, 128, 0.12);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 1.5rem;
+    display: none !important; /* Hide circle icon as requested */
 }
 
 .info-modal-icon svg {
@@ -3688,14 +3737,42 @@ body.modal-open {
     font-size: 1.6rem;
     color: var(--text-primary);
     margin-bottom: 1rem;
+    flex-shrink: 0; /* Keep title static */
 }
 
 .info-modal-content p {
     font-family: 'Outfit', sans-serif;
-    font-size: 0.98rem;
+    font-size: 0.95rem;
     color: var(--clr-charcoal);
-    line-height: 1.6;
-    margin-bottom: 2rem;
+    line-height: 1.65;
+    margin-bottom: 1.5rem;
+    white-space: pre-wrap; /* Preserve list item line breaks and emoji layout */
+    text-align: left; /* Align left for clean readability of list indices */
+    overflow-y: scroll; /* Force scrollbar container display on mobile browsers */
+    -webkit-overflow-scrolling: touch; /* Butter-smooth momentum scrolling on iOS */
+    flex-grow: 1; /* Take up remaining height */
+    padding-right: 10px; /* Thinner padding for thinner scrollbar */
+    
+    /* Ultra-smooth multi-stop luxury gold gradient mask to fade text out beautifully */
+    mask-image: linear-gradient(to bottom, black 65%, rgba(0, 0, 0, 0.3) 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 65%, rgba(0, 0, 0, 0.3) 90%, transparent 100%);
+}
+
+/* Beautiful customized premium gold scrollbar for details modal */
+.info-modal-content p::-webkit-scrollbar {
+    width: 4px !important; /* Thinner gold scrollbar */
+    display: block !important;
+}
+.info-modal-content p::-webkit-scrollbar-track {
+    background: rgba(197, 168, 128, 0.08) !important;
+    border-radius: 4px !important;
+}
+.info-modal-content p::-webkit-scrollbar-thumb {
+    background: var(--clr-gold-dark) !important; /* Richer gold color for solid mobile visibility */
+    border-radius: 4px !important;
+}
+.info-modal-content p::-webkit-scrollbar-thumb:hover {
+    background: var(--clr-champagne) !important;
 }
 
 .info-modal-btn {
@@ -4075,12 +4152,22 @@ body.modal-open {
     }
     .lightbox-viewport {
         width: 95vw;
+        height: 60vh !important;
         max-height: 70vh;
-        height: auto;
         aspect-ratio: auto;
     }
     .lightbox-slide img {
-        max-height: 70vh;
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover !important;
+    }
+    .lightbox-slide img.horizontal-contain {
+        width: auto !important;
+        height: auto !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        object-fit: contain !important;
+        transform: scale(1.15) !important;
     }
 }
 
@@ -4146,5 +4233,157 @@ body.modal-open {
     }
 }
 
+/* --- Premium In-App Browser Detour Overlay --- */
+.in-app-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(7, 8, 9, 0.95); /* Deep obsidian dark cover */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    transition: opacity 0.5s ease;
+}
+
+.in-app-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+    display: none !important;
+}
+
+.in-app-modal {
+    background: rgba(19, 22, 25, 0.85); /* Graphite glassmorphism */
+    border: 1px solid rgba(197, 168, 128, 0.35); /* Gold Champagne border */
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-premium-hover);
+    max-width: 460px;
+    width: 100%;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    animation: modalSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.in-app-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.in-app-logo img {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    border: 1px solid var(--clr-champagne);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    margin-bottom: 0.8rem;
+}
+
+.in-app-logo h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--clr-champagne);
+    font-size: 1.3rem;
+    letter-spacing: 0.15em;
+    font-weight: 500;
+}
+
+.in-app-title {
+    font-family: 'Playfair Display', serif;
+    color: #ffffff;
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+    line-height: 1.3;
+}
+
+.in-app-desc {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.8rem;
+}
+
+.in-app-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    text-align: left;
+    background: rgba(10, 12, 14, 0.4);
+    padding: 1.5rem;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(197, 168, 128, 0.15);
+}
+
+.in-app-step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.step-num {
+    background: var(--clr-champagne);
+    color: var(--clr-obsidian);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.in-app-step p {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    color: var(--clr-charcoal);
+    margin: 0;
+}
+
+.in-app-step strong {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.in-app-footer {
+    margin-top: 2rem;
+    font-size: 0.78rem;
+    color: var(--clr-champagne);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
 
 
+    50% {
+        transform: translateY(6px);
+        opacity: 0.95;
+    }
+}
+
+
+
+
+
+
+/* Custom styling for room card image hover link to booking modal */
+.room-card-image-wrap img {
+    cursor: pointer !important;
+}

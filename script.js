@@ -179,6 +179,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 const formattedDates = `${formatDate(checkin)} - ${formatDate(checkout)}`;
                 
+                const now = new Date();
+                const exactTime = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
                 // Створюємо об'єкт бронювання
                 const newBooking = {
                     id: newId,
@@ -187,7 +190,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     room: `${room} (${guestsCombined})`,
                     dates: formattedDates,
                     status: 'Нове',
-                    comment: 'Бронювання з головної сторінки'
+                    createdAt: exactTime,
+                    comment: `Бронювання з головної сторінки. Сума: ${document.getElementById('recapTotalPrice')?.innerText || '0 грн'}`
                 };
 
                 // Атомарно додаємо нове бронювання в хмару (pushToCloud оновить і локальний кеш)
@@ -220,8 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ---- 2-Step Booking Wizard Controller ----
     let selectedRoomVal = "Двомісний номер";
-    let selectedRoomPrice = 880;
-    let selectedRoomImage = "DSC08330.JPG";
+    let selectedRoomPrice = 2800;
+    let selectedRoomImage = "DSC08330.webp";
     let selectedRoomCapacity = "1–2 особи";
     let selectedRoomDesc = "Затишний номер з великим ліжком, власною ванною та телевізором.";
 
@@ -236,6 +240,95 @@ document.addEventListener('DOMContentLoaded', () => {
     const indicatorStep1 = document.getElementById('indicatorStep1');
     const indicatorStep2 = document.getElementById('indicatorStep2');
     const dateRecapText = document.getElementById('dateRecapText');
+
+    function calculatePrices() {
+        const adultsVal = document.getElementById('bookingAdults')?.value || "2";
+        const childrenVal = document.getElementById('bookingChildren')?.value || "0";
+        
+        let adults = 2;
+        if (adultsVal === "more_adults") adults = 5;
+        else adults = parseInt(adultsVal) || 2;
+        
+        let children = 0;
+        if (childrenVal === "more_children") children = 4;
+        else children = parseInt(childrenVal) || 0;
+        
+        const totalGuests = adults + children;
+        
+        const errorDiv = document.getElementById('guestCapacityError');
+        const submitBtn = document.querySelector('#bookingStep2 .btn-submit');
+        
+        if (totalGuests > 4) {
+            if (errorDiv) errorDiv.style.display = 'block';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = '0.5';
+                submitBtn.style.pointerEvents = 'none';
+            }
+            const recapTotalPrice = document.getElementById('recapTotalPrice');
+            if (recapTotalPrice) {
+                recapTotalPrice.innerText = 'Завелика кількість осіб';
+            }
+            return;
+        } else {
+            if (errorDiv) errorDiv.style.display = 'none';
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.pointerEvents = 'auto';
+            }
+        }
+        
+        let multiplier = 1.0;
+        if (totalGuests === 1) {
+            multiplier = 0.90;
+        } else if (totalGuests === 3) {
+            multiplier = 1.15;
+        } else if (totalGuests >= 4) {
+            multiplier = 1.20;
+        }
+        
+        // Calculate nights
+        let diffDays = 0;
+        if (selectedCheckinVal && selectedCheckoutVal) {
+            const start = new Date(selectedCheckinVal);
+            const end = new Date(selectedCheckoutVal);
+            const diffTime = Math.abs(end - start);
+            diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        }
+        
+        let daysDiscount = 1.0;
+        if (diffDays >= 3) {
+            daysDiscount = 0.95;
+        }
+
+        const finalNightlyPrice = Math.round(selectedRoomPrice * multiplier * daysDiscount);
+        const total = diffDays * finalNightlyPrice;
+        
+        // Update Step 2 recap UI
+        const recapRoomPrice = document.getElementById('recapRoomPrice');
+        if (recapRoomPrice) {
+            recapRoomPrice.innerText = `${finalNightlyPrice.toLocaleString()} грн / ніч`;
+        }
+        
+        const recapTotalPrice = document.getElementById('recapTotalPrice');
+        if (recapTotalPrice) {
+            if (diffDays > 0) {
+                recapTotalPrice.innerText = `${total.toLocaleString()} грн`;
+            } else {
+                recapTotalPrice.innerText = `0 грн`;
+            }
+        }
+    }
+
+    const bookingAdultsSelect = document.getElementById('bookingAdults');
+    const bookingChildrenSelect = document.getElementById('bookingChildren');
+    if (bookingAdultsSelect) {
+        bookingAdultsSelect.addEventListener('change', calculatePrices);
+    }
+    if (bookingChildrenSelect) {
+        bookingChildrenSelect.addEventListener('change', calculatePrices);
+    }
 
     function setStep2ButtonsDisabled(disabled) {
         if (btnGoToStep2) btnGoToStep2.disabled = disabled;
@@ -401,10 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     if (recapDates) recapDates.innerText = `${start.getDate().toString().padStart(2, '0')}.${(start.getMonth() + 1).toString().padStart(2, '0')}.${start.getFullYear()} - ${end.getDate().toString().padStart(2, '0')}.${(end.getMonth() + 1).toString().padStart(2, '0')}.${end.getFullYear()}`;
                     if (recapNights) recapNights.innerText = `${diffDays} ${diffDays === 1 ? 'ніч' : diffDays < 5 ? 'ночі' : 'ночей'}`;
-                    if (recapTotalPrice) {
-                        const total = diffDays * selectedRoomPrice;
-                        recapTotalPrice.innerText = `${total.toLocaleString()} грн`;
-                    }
+                    calculatePrices();
                 } else {
                     selectedCheckinVal = "";
                     selectedCheckoutVal = "";
@@ -497,7 +587,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Update Step 2 recap defaults
             document.getElementById('recapRoomImage').src = selectedRoomImage;
             document.getElementById('recapRoomTitle').innerText = selectedRoomVal;
-            document.getElementById('recapRoomPrice').innerText = `${selectedRoomPrice} грн / ніч`;
+            calculatePrices();
 
             // Reset calendar values and dates selected on room change to prevent crossing bookings
             selectedCheckinVal = "";
@@ -652,6 +742,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // Force scroll top for modal card to ensure form fields are visible on mobile
             const wizardContainer = document.querySelector('.booking-wizard-container');
             if (wizardContainer) wizardContainer.scrollTop = 0;
+
+            calculatePrices();
         }
     };
 
@@ -937,6 +1029,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (normalized.includes("двомісний") && !normalized.includes("бюджетний")) return "double";
         if (normalized.includes("бюджетний")) return "budget";
         if (normalized.includes("сімейний")) return "family";
+        if (normalized.includes("двокімнатний делюкс") || normalized.includes("делюкс")) return "deluxe";
+        if (normalized.includes("двокімнатний преміум")) return "two-room-premium";
         if (normalized.includes("апартаменти преміум") || normalized.includes("преміум")) return "premium";
         return "double";
     };
@@ -945,47 +1039,71 @@ document.addEventListener('DOMContentLoaded', () => {
         const folder = getRoomFolder(roomName);
         if (folder === "double") {
             return [
-                "rooms/double/photo_2026-05-22_12-36-12.jpg",
-                "rooms/double/photo_2026-05-22_12-36-14.jpg",
-                "rooms/double/photo_2026-05-22_12-36-17.jpg",
-                "rooms/double/photo_2026-05-22_12-36-18.jpg",
-                "rooms/double/photo_2026-05-22_12-36-20.jpg",
-                "rooms/double/photo_2026-05-22_12-36-21.jpg",
-                "rooms/double/photo_2026-05-22_12-36-22.jpg",
-                "rooms/double/photo_2026-05-22_12-36-24.jpg"
+                "rooms/double/photo_2026-05-22_12-36-12.webp",
+                "rooms/double/photo_2026-05-22_12-36-14.webp",
+                "rooms/double/photo_2026-05-22_12-36-17.webp",
+                "rooms/double/photo_2026-05-22_12-36-18.webp",
+                "rooms/double/photo_2026-05-22_12-36-20.webp",
+                "rooms/double/photo_2026-05-22_12-36-21.webp",
+                "rooms/double/photo_2026-05-22_12-36-22.webp",
+                "rooms/double/photo_2026-05-22_12-36-24.webp"
             ];
         } else if (folder === "family") {
             return [
-                "rooms/family/IMG_2318.JPG",
-                "rooms/family/IMG_2321.JPG",
-                "rooms/family/IMG_2322.JPG",
-                "rooms/family/IMG_2323.JPG",
-                "rooms/family/IMG_2324.JPG",
-                "rooms/family/IMG_2325.JPG",
-                "rooms/family/IMG_2326.JPG",
-                "rooms/family/IMG_2327.JPG",
-                "rooms/family/IMG_2330.JPG",
-                "rooms/family/IMG_2331.JPG"
+                "rooms/family/IMG_2318.webp",
+                "rooms/family/IMG_2321.webp",
+                "rooms/family/IMG_2322.webp",
+                "rooms/family/IMG_2323.webp",
+                "rooms/family/IMG_2324.webp",
+                "rooms/family/IMG_2325.webp",
+                "rooms/family/IMG_2326.webp",
+                "rooms/family/IMG_2327.webp",
+                "rooms/family/IMG_2330.webp",
+                "rooms/family/IMG_2331.webp"
             ];
         } else if (folder === "premium") {
             return [
-                "rooms/premium/IMG_2339.JPG",
-                "rooms/premium/IMG_2340.JPG",
-                "rooms/premium/IMG_2341.JPG",
-                "rooms/premium/IMG_2343.JPG",
-                "rooms/premium/IMG_2345.JPG",
-                "rooms/premium/IMG_2346.JPG",
-                "rooms/premium/IMG_9116.PNG",
-                "rooms/premium/IMG_9119.PNG"
+                "rooms/premium/IMG_2339.webp",
+                "rooms/premium/IMG_2340.webp",
+                "rooms/premium/IMG_2341.webp",
+                "rooms/premium/IMG_2343.webp",
+                "rooms/premium/IMG_2345.webp",
+                "rooms/premium/IMG_2346.webp"
             ];
         } else if (folder === "budget") {
             return [
-                "rooms/budget/DSC08414 (2).JPG",
-                "rooms/budget/DSC08417 (2).JPG",
-                "rooms/budget/IMG_2333.JPG",
-                "rooms/budget/IMG_2336.JPG",
-                "rooms/budget/IMG_2337.JPG",
-                "rooms/budget/IMG_2338.JPG"
+                "rooms/budget/IMG_2333.webp",
+                "rooms/budget/IMG_2336.webp",
+                "rooms/budget/IMG_2337.webp",
+                "rooms/budget/IMG_2338.webp",
+                "rooms/budget/DSC08414 (2).webp",
+                "rooms/budget/DSC08417 (2).webp"
+            ];
+        } else if (folder === "deluxe") {
+            return [
+                "rooms/deluxe/IMG_2356.webp",
+                "rooms/deluxe/IMG_2357.webp",
+                "rooms/deluxe/IMG_2358.webp",
+                "rooms/deluxe/IMG_2359.webp",
+                "rooms/deluxe/IMG_2360.webp",
+                "rooms/deluxe/IMG_2363.webp",
+                "rooms/deluxe/IMG_2354.webp",
+                "rooms/deluxe/IMG_2355.webp"
+            ];
+        } else if (folder === "two-room-premium") {
+            return [
+                "rooms/two-room-premium/IMG_9227.webp",
+                "rooms/two-room-premium/IMG_2374.webp",
+                "rooms/two-room-premium/IMG_2365.webp",
+                "rooms/two-room-premium/IMG_2366.webp",
+                "rooms/two-room-premium/IMG_2367.webp",
+                "rooms/two-room-premium/IMG_2368.webp",
+                "rooms/two-room-premium/IMG_2369.webp",
+                "rooms/two-room-premium/IMG_2370.webp",
+                "rooms/two-room-premium/IMG_2371.webp",
+                "rooms/two-room-premium/IMG_2372.webp",
+                "rooms/two-room-premium/IMG_2373.webp",
+                "rooms/two-room-premium/IMG_2376.webp"
             ];
         }
         return [];
@@ -993,17 +1111,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const getRoomDetails = (roomName) => {
         const details = {
-            "двомісний номер": "Вишуканий затишок для двох. Номер площею 22 м² обладнаний ортопедичним королівським ліжком (King Size), вишуканим текстилем, власною мармуровою ванною кімнатою, ультрачітким Smart-TV, швидкісним Wi-Fi, міні-баром та індивідуальною системою кондиціонування. Ідеальний баланс комфорту та приватності.",
-            "бюджетний двомісний": "Компактний, але неймовірно затишний та функціональний номер площею 18 м². Обладнаний двоспальним ліжком з ортопедичним матрацом, власною душовою кімнатою, телевізором та всіма необхідними зручностями для комфортного перебування за вигідною ціною.",
-            "бюджетний двомісний номер": "Компактний, але неймовірно затишний та функціональний номер площею 18 м². Обладнаний двоспальним ліжком з ортопедичним матрацом, власною душовою кімнатою, телевізором та всіма необхідними зручностями для комфортного перебування за вигідною ціною.",
-            "сімейний": "Просторий та затишний номер для всієї родини площею 35 м². Обладнаний великим двоспальним ліжком та розкладним диваном преміум-класу. До ваших послуг власна ванна кімната, Smart-TV, швидкісний інтернет, кондиціонер та чудовий вид на мальовничу природу Східниці.",
-            "сімейний номер": "Просторий та затишний номер для всієї родини площею 35 м². Обладнаний великим двоспальним ліжком та розкладним диваном преміум-класу. До ваших послуг власна ванна кімната, Smart-TV, швидкісний інтернет, кондиціонер та чудовий вид на мальовничу природу Східниці.",
-            "апартаменти преміум": "Розкішні апартаменти площею 45 м² для справжніх цінувальників преміального комфорту. Номер обладнаний сучасним ліжком King Size, повністю укомплектованою власною кухнею та вітальною зоною. Має дизайнерський інтер'єр, вишукану ванну кімнату та панорамну терасу."
+            "двомісний номер": "📐 Простір та планування\n• Площа: 17 квадратних метрів.\n• Планування: компактний та комфортний номер для двох гостей.\n• Вулична зона: власний балкон для відпочинку.\n\n🛏️ Спальні місця\n• Основне: одне велике двоспальне ліжко.\n\n🛁 Зручності та сервіс\n• Санвузол: власна ванна кімната в номері.\n• Гігієна: безкоштовні туалетно-косметичні засоби.\n• Зберігання: шафа або гардероб для речей.\n• Зв'язок: безкоштовний бездротовий інтернет (Wi-Fi).\n• Техніка: телевізор із плоским екраном та холодильник.\n\n⛰️ Головні переваги\n• Краєвид: мальовничий вид на гори.\n• Комфорт: затишний номер із усіма базовими зручностями для відпочинку.",
+            "двомісний": "📐 Простір та планування\n• Площа: 17 квадратних метрів.\n• Планування: compactний та комфортний номер для двох гостей.\n• Вулична зона: власний балкон для відпочинку.\n\n🛏️ Спальні місця\n• Основне: одне велике двоспальне ліжко.\n\n🛁 Зручності та сервіс\n• Санвузол: власна ванна кімната в номері.\n• Гігієна: безкоштовні туалетно-косметичні засоби.\n• Зберігання: шафа або гардероб для речей.\n• Зв'язок: безкоштовний бездротовий інтернет (Wi-Fi).\n• Техніка: телевізор із плоским екраном та холодильник.\n\n⛰️ Головні переваги\n• Краєвид: мальовничий вид на гори.\n• Комфорт: затишний номер із усіма базовими зручностями для відпочинку.",
+            "сімейний": "📐 Простір та планування\n• Площа: 34 квадратні метри.\n• Кімнати: двокімнатний номер для комфортного сімейного відпочинку.\n• Вулична зона: простора власна тераса.\n• Комфорт: покращена звукоізоляція для спокійного проживання.\n\n🛏️ Спальні місця (до 4 гостей)\n• Основне: одне велике двоспальне ліжко.\n• Додаткове: один великий розкладний диван.\n\n🛁 Зручності та сервіс\n• Харчування: сніданок уже входить у вартість.\n• Санвузол: власна ванна кімната в номері.\n• Гігієна: безкоштовні туалетно-косметичні засоби та тапочки.\n• Зберігання: шафа або гардероб для речей.\n• Зв'язок: безкоштовний бездротовий інтернет (Wi-Fi).\n• Техніка: телевізор із плоским екраном.\n• Додатково: електричний чайник та чашки для гарячих напоїв.\n\n🌿 Головні переваги\n• Простір: ідеально підходить для сім’ї або компанії до 4 осіб.\n• Відпочинок: затишна тераса для ранкової кави чи вечірнього релаксу.\n• Комфорт: поєднання простору, тиші та домашніх зручностей.",
+            "сімейний номер": "📐 Простір та планування\n• Площа: 34 квадратні метри.\n• Кімнати: двокімнатний номер для комфортного сімейного відпочинку.\n• Вулична зона: простора власна тераса.\n• Комфорт: покращена звукоізоляція для спокійного проживання.\n\n🛏️ Спальні місця (до 4 гостей)\n• Основне: одне велике двоспальне ліжко.\n• Додаткове: один великий розкладний диван.\n\n🛁 Зручності та сервіс\n• Харчування: сніданок уже входить у вартість.\n• Санвузол: власна ванна кімната в номері.\n• Гігієна: безкоштовні туалетно-косметичні засоби та тапочки.\n• Зберігання: шафа або гардероб для речей.\n• Зв'язок: безкоштовний бездротовий інтернет (Wi-Fi).\n• Техніка: телевізор із плоским екраном.\n• Додатково: електричний чайник та чашки для гарячих напоїв.\n\n🌿 Головні переваги\n• Простір: ідеально підходить для сім’ї або компанії до 4 осіб.\n• Відпочинок: затишна тераса для ранкової кави чи вечірнього релаксу.\n• Комфорт: поєднання простору, тиші та домашніх зручностей.",
+            "бюджетний двомісний": "📐 Простір та планування\n• Площа: 17 квадратних метрів.\n• Планування: компактний та практичний номер для двох гостей.\n• Комфорт: хороша звукоізоляція для спокійного відпочинку.\n\n🛏️ Спальні місця\n• Основне: одне двоспальне ліжко.\n\n🛁 Зручності та сервіс\n• Харчування: сніданок уже входить у вартість.\n• Санвузол: власна ванна кімната в номері.\n• Гігієна: безкоштовні туалетно-косметичні засоби та тапочки.\n• Зберігання: шафа або гардероб для речей.\n• Зв'язок: безкоштовний бездротовий інтернет (Wi-Fi).\n• Техніка: телевізор із плоским екраном.\n• Додатково: електричний чайник та чашки для гарячих напоїв.\n\n⛰️ Головні переваги\n• Краєвид: приємний вид на гори.\n• Практичність: оптимальний варіант для комфортного проживання за доступною ціною.\n• Атмосфера: затишний номер для короткого або тривалого відпочинку.",
+            "бюджетний двомісний номер": "📐 Простір та планування\n• Площа: 17 квадратних метрів.\n• Планування: компактний та практичний номер для двох гостей.\n• Комфорт: хороша звукоізоляція для спокійного відпочинку.\n\n🛏️ Спальні місця\n• Основне: одне двоспальне ліжко.\n\n🛁 Зручності та сервіс\n• Харчування: сніданок уже входить у вартість.\n• Санвузол: власна ванна кімната в номері.\n• Гігієна: безкоштовні туалетно-косметичні засоби та тапочки.\n• Зберігання: шафа або гардероб для речей.\n• Зв'язок: безкоштовний бездротовий інтернет (Wi-Fi).\n• Техніка: телевізор із плоским екраном.\n• Додатково: електричний чайник та чашки для гарячих напоїв.\n\n⛰️ Головні переваги\n• Краєвид: приємний вид на гори.\n• Практичність: оптимальний варіант для комфортного проживання за доступною ціною.\n• Атмосфера: затишний номер для короткого або тривалого відпочинку.",
+            "апартаменти преміум": "📐 Простір та планування\n• Площа: 52 квадратних метри.\n• Кімнати: дві окремі кімнати.\n• Зона готування: повноцінна кухня з посудом і технікою.\n• Вулична зона: власна тераса з краєвидом.\n\n🛏️ Спальні місця (до 4 гостей)\n• Основне: одне велике двоспальне ліжко.\n• Додаткове: один розкладний диван-ліжко.\n\n🛁 Зручності та сервіс\n• Харчування: сніданок уже входить у вартість.\n• Зв'язок: безкоштовний бездротовий інтернет (Wi-Fi).\n• Санвузол: власна ванна кімната в номері.\n• Гігієна: безкоштовні косметичні засоби та капці.\n• Зберігання: велика шафа або гардероб для речей.\n• Побутova техніка: холодильник та кухонне приладдя.\n\n⛰️ Головні переваги та локація\n• Естетика: прямий вид на гори з вікна або тераси.\n• Оздоровлення: поблизу розташовані лікувальні джерела №25, №26 та бювет мінеральної води №2С.\n• Відпочинок на території: затишні альтанки з облаштованою мангальною зоною",
+            "преміум": "📐 Простір та планування\n• Площа: 52 квадратних метри.\n• Кімнати: дві окремі кімнати.\n• Зона готування: повноцінна кухня з посудом і технікою.\n• Вулична зона: власна тераса з краєвидом.\n\n🛏️ Спальні місця (до 4 гостей)\n• Основне: одне велике двоспальне ліжко.\n• Додаткове: один розкладний диван-ліжко.\n\n🛁 Зручності та сервіс\n• Харчування: сніданок уже входить у вартість.\n• Зв'язок: безкоштовний бездротовий інтернет (Wi-Fi).\n• Санвузол: власна ванна кімната в номері.\n• Гігієна: безкоштовні косметичні засоби та капці.\n• Зберігання: велика шафа або гардероб для речей.\n• Побутова техніка: холодильник та кухонне приладдя.\n\n⛰️ Головні переваги та локація\n• Естетика: прямий вид на гори з вікна або тераси.\n• Оздоровлення: поблизу розташовані лікувальні джерела №25, №26 та бювет мінеральної води №2С.\n• Відпочинок на території: затишні альтанки з облаштованою мангальною зоною",
+            "двокімнатний делюкс": "📐 Простір та планування\n• Площа: 37 квадратних метрів.\n• Кімнати: дві окремі — затишна спальня та простора вітальня з кухонною зоною.\n• Вулична зона: два приватні балкони, кожна кімната має власний вихід.\n• Планування: комфортний і функціональний номер для сімейного відпочинку або тривалого проживання.\n\n🛏️ Спальні місця\n• Основне: одне велике двоспальне ліжко з ортопедичним матрацом.\n• Додаткове: один зручний розкладний диван у вітальні.\n\n🛁 Зручності та сервіс\n• Харчування: власна кухня з усім необхідним посудом, приладдям і технікою для приготування їжі.\n• Санвузол: власна ванна кімната в номері.\n• Гігієна: свіжі рушники, косметичні засоби, м’які халати та індивідуальні тапочки.\n• Зв'язок: безкоштовний Wi-Fi.\n• Техніка: сучасний телевізор у зоні відпочинку.\n\n🌿 Головні переваги\n• Простір: окрема спальня та вітальня забезпечують комфорт і приватність для кожного гостя.\n• Відпочинок: два окремі балкони для ранкової кави та спокійного відпочинку.\n• Автономність: повністю обладнана кухня для зручного проживання.\n• Комфорт: світлий, просторий номер із домашньою атмосферою для короткого чи тривалого відпочинку.",
+            "двокімнатний преміум": "📐 Простір та планування\n• Площа: 53 квадратні метри.\n• Кімнати: дві окремі повноцінні кімнати — спальня та вітальня.\n• Вулична зона: власна простора тераса з меблями для відпочинку.\n• Планування: зручний формат для сімейного відпочинку або компанії друзів.\n\n🛏️ Спальні місця (до 4 гостей)\n• Основне: одне велике двоспальне ліжко.\n• Додаткове: один великий розкладний диван.\n\n🛁 Зручності та сервіс\n• Харчування: кухня з усім необхідним для приготування їжі та сервірування.\n• Санвузол: власна простора ванна кімната з душовою кабіною або ванною.\n• Гігієна: індивідуальні косметичні засоби, комплекти м’яких рушників, халати та тапочки.\n• Зберігання: місце для речей та комфортного розміщення під час проживання.\n• Зв’язок: безкоштовний високошвидкісний Wi-Fi.\n• Техніка: Smart-TV, кондиціонер, холодильник, мікрохвильова піч, електричний чайник.\n• Додатково: повний набір посуду, келихи та чайний набір.\n\n🌿 Головні переваги\n• Простір: дві окремі кімнати забезпечують комфортне проживання для 4 гостей.\n• Відпочинок: велика власна тераса для ранкової кави чи вечірнього релаксу.\n• Автономність: сучасна кухня дозволяє легко готувати улюблені страви.\n• Комфорт: щоденне прибирання, оновлення косметики, заміна рушників та компліментарна питна вода включені у вартість."
         };
         const normalized = roomName.toLowerCase().trim();
-        return details[normalized] || "Розкішний номер із бездоганним дизайнерським інтер'єром, обладнаний сучасними зручностями: ортопедичне ліжко King Size, вишукана ванна кімната, Smart-TV, кондиціонер, швидкісний інтернет та міні-бар. Повні деталі та характеристики будуть опубліковані найближчим часом.";
+        return details[normalized] || "Розкішний номер із бездоганним дизайнерським інтер'єром, обладнаний сучасними зручностями. Повні деталі та характеристики будуть опубліковані найближчим часом.";
     };
-
+    
     const showInfoPopup = async (type, roomName) => {
         if (!infoModal) return;
         const displayRoomName = roomName || "номер";
@@ -1016,6 +1138,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Reset states
         if (modalContent) modalContent.classList.remove('is-gallery');
+        
+
         if (infoModalIcon) infoModalIcon.classList.remove('hidden');
         if (infoModalText) infoModalText.classList.remove('hidden');
         if (galleryGrid) {
@@ -1112,6 +1236,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         infoModal.classList.add('active');
         document.body.classList.add('modal-open');
+        
+
     };
 
     const hideInfoPopup = () => {
@@ -1122,6 +1248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bookingModal && !bookingModal.classList.contains('active')) {
             document.body.classList.remove('modal-open');
         }
+
     };
 
     // 7.2 Show More / Less Rooms Catalogs
@@ -1259,7 +1386,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const lightboxNextBtn = document.getElementById('lightboxNextBtn');
 
     // Style zoom-in cursor initially
-    document.querySelectorAll('.carousel-item img, .triple-card img, .split-image img, .inspector-image-wrap img, .room-mini-card img, .recap-room-card img, .room-card-image-wrap img, .gallery-item img').forEach(img => {
+    document.querySelectorAll('.carousel-item img, .triple-card img, .split-image img, .inspector-image-wrap img, .room-mini-card img, .recap-room-card img, .gallery-item img').forEach(img => {
         img.style.cursor = 'zoom-in';
     });
 
@@ -1272,7 +1399,12 @@ document.addEventListener('DOMContentLoaded', () => {
         lightboxImages.forEach(src => {
             const slide = document.createElement('div');
             slide.className = 'lightbox-slide';
-            slide.innerHTML = `<img src="${src}" alt="Перегляд фото">`;
+            // Check if this is one of the 4 horizontal images that shouldn't be cropped
+            const isHorizontal = src.includes('DSC08414%20(2)') || src.includes('DSC08414 (2)') || 
+                                 src.includes('DSC08417%20(2)') || src.includes('DSC08417 (2)') || 
+                                 src.includes('IMG_2354') || src.includes('IMG_2355');
+            const imgClass = isHorizontal ? 'class="horizontal-contain"' : '';
+            slide.innerHTML = `<img ${imgClass} src="${src}" alt="Перегляд фото">`;
             lightboxTrack.appendChild(slide);
         });
     };
@@ -1377,6 +1509,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => {
         const targetImg = e.target;
         if (targetImg && targetImg.tagName === 'IMG') {
+            // If user clicked the main room card photo, open the booking modal & pre-select that room!
+            if (targetImg.closest('.room-card-image-wrap')) {
+                const roomCard = targetImg.closest('.room-card');
+                const h3 = roomCard ? roomCard.querySelector('h3') : null;
+                const roomName = h3 ? h3.innerText.trim() : (targetImg.alt || "");
+                openModal(roomName);
+                return;
+            }
+
             // Check if it's inside one of our allowed gallery containers
             const container = targetImg.closest('.photo-carousel') ||
                               targetImg.closest('.gallery-carousel-track') || 
@@ -1462,6 +1603,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         }, { passive: true });
+
+        // Lock background window scroll on mobile touch swiping
+        imageModal.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
     }
 
     // Keyboard controls for Lightbox
@@ -1727,6 +1873,111 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial check
     handleScrollAnimations();
+
+    // ---- Luxury In-App Browser Auto-Bypass ----
+    function checkInAppBrowser() {
+        const ua = navigator.userAgent || navigator.vendor || window.opera;
+        const isInApp = (ua.indexOf("FBAN") > -1) || 
+                        (ua.indexOf("FBAV") > -1) || 
+                        (ua.indexOf("Instagram") > -1) || 
+                        (ua.indexOf("Telegram") > -1) || 
+                        (ua.indexOf("Messenger") > -1) ||
+                        (ua.indexOf("Line") > -1) ||
+                        (ua.indexOf("MicroMessenger") > -1);
+
+        if (!isInApp) return;
+
+        const isAndroid = /Android/i.test(ua);
+        const isIOS = /iPhone|iPad|iPod/i.test(ua);
+        const overlay = document.getElementById('inAppOverlay');
+        const androidBtnWrap = document.getElementById('androidButtonWrap');
+        const androidIntentBtn = document.getElementById('androidIntentBtn');
+        const iosSteps = document.getElementById('iosSteps');
+
+        if (!overlay) return;
+
+        // Clean up preloader immediately so it doesn't block the bypass view
+        const preloader = document.querySelector('.preloader');
+        if (preloader) preloader.style.display = 'none';
+
+        if (isAndroid) {
+            // Android Path: 100% Automatic native browser redirect
+            const intentUrl = "intent://elata-pink.vercel.app#Intent;scheme=https;action=android.intent.action.VIEW;end";
+            
+            // Auto trigger intent
+            window.location.href = intentUrl;
+
+            // Display manual fallback button on Android in case of specific browser blocking
+            overlay.classList.remove('hidden');
+            if (iosSteps) iosSteps.style.display = 'none';
+            if (androidBtnWrap) androidBtnWrap.classList.remove('hidden');
+            if (androidIntentBtn) {
+                androidIntentBtn.setAttribute('href', intentUrl);
+            }
+        } else if (isIOS) {
+            // iOS Path: Show beautiful guided steps dialog
+            overlay.classList.remove('hidden');
+        } else {
+            // Fallback for general webviews
+            overlay.classList.remove('hidden');
+        }
+    }
+
+    // ---- Mangal Slideshow Controller ----
+    const initMangalSlideshow = () => {
+        const slides = document.querySelectorAll('.mangal-slide');
+        const dots = document.querySelectorAll('.mangal-dot');
+        if (slides.length === 0) return;
+        
+        let currentIndex = 0;
+        let slideInterval = null;
+        
+        const showSlide = (index) => {
+            slides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.style.opacity = '1';
+                    slide.style.zIndex = '2';
+                } else {
+                    slide.style.opacity = '0';
+                    slide.style.zIndex = '0';
+                }
+            });
+            
+            dots.forEach((dot, i) => {
+                if (i === index) {
+                    dot.style.backgroundColor = 'var(--clr-gold)';
+                    dot.classList.add('active');
+                } else {
+                    dot.style.backgroundColor = 'rgba(255,255,255,0.4)';
+                    dot.classList.remove('active');
+                }
+            });
+            currentIndex = index;
+        };
+        
+        const nextSlide = () => {
+            let nextIndex = (currentIndex + 1) % slides.length;
+            showSlide(nextIndex);
+        };
+        
+        // Auto-change every 3.5 seconds
+        slideInterval = setInterval(nextSlide, 3500);
+        
+        // Manual control via dots
+        dots.forEach((dot, i) => {
+            dot.addEventListener('click', () => {
+                clearInterval(slideInterval);
+                showSlide(i);
+                // Restart interval
+                slideInterval = setInterval(nextSlide, 3500);
+            });
+        });
+    };
+    
+    initMangalSlideshow();
+
+    // Run sniffer
+    // checkInAppBrowser();
 
     // Background cache warming sync on page load
     syncWithCloud();

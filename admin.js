@@ -331,7 +331,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${b.phone}</td>
                 <td>${b.room}</td>
                 <td>${b.dates}</td>
-                <td><span class="status-badge ${statusClass}">${b.status}</span></td>
+                <td>
+                    <span class="status-badge ${statusClass}">${b.status}</span>
+                    ${b.createdAt ? `<div style="font-size: 0.75rem; color: #a19280; margin-top: 0.25rem; font-weight: 500; font-family: 'Outfit', sans-serif;">${b.createdAt}</div>` : ''}
+                </td>
                 <td>
                     <button class="btn-outline btn-sm edit-btn" data-id="${b.id}">Деталі</button>
                 </td>
@@ -363,6 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modalPhone').value = b.phone;
         document.getElementById('modalRoom').value = b.room;
         document.getElementById('modalComment').value = b.comment;
+        document.getElementById('modalCreatedAt').value = b.createdAt || 'Невідомо';
         document.getElementById('modalStatus').value = b.status;
 
         modal.classList.add('active');
