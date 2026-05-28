@@ -439,6 +439,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    function playNotificationSound() {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            
+            // First note (warm, soft chime)
+            const osc1 = audioCtx.createOscillator();
+            const gain1 = audioCtx.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioCtx.destination);
+            
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(880, audioCtx.currentTime); // A5 note (crystal clear chime)
+            
+            gain1.gain.setValueAtTime(0.15, audioCtx.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+            
+            osc1.start(audioCtx.currentTime);
+            osc1.stop(audioCtx.currentTime + 0.6);
+            
+            // Second note (slightly higher pitch, slightly delayed)
+            const osc2 = audioCtx.createOscillator();
+            const gain2 = audioCtx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioCtx.destination);
+            
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1174.66, audioCtx.currentTime + 0.12); // D6 note (cheerful ding)
+            
+            gain2.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain2.gain.setValueAtTime(0.15, audioCtx.currentTime + 0.12);
+            gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+            
+            osc2.start(audioCtx.currentTime + 0.12);
+            osc2.stop(audioCtx.currentTime + 0.8);
+            
+        } catch (e) {
+            console.warn("Failed to play notification sound:", e);
+        }
+    }
+
+    const testSoundBtn = document.getElementById('testSoundBtn');
+    if (testSoundBtn) {
+        testSoundBtn.addEventListener('click', () => {
+            playNotificationSound();
+        });
+    }
+
     document.getElementById('refreshBtn').addEventListener('click', () => {
         syncWithCloud().then(data => {
             bookings = data.bookings;
@@ -617,15 +664,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    let previousBookingIds = new Set();
+
     // Auto Refresh every 10 seconds from cloud
     setInterval(() => {
         if (isPushing || isSyncing) return;
         // Only refresh if modals are not active to prevent editing interference
         if (!modal.classList.contains('active') && !datesModal.classList.contains('active') && !passwordsModal.classList.contains('active')) {
             syncWithCloud().then(data => {
-                if (data) {
-                    bookings = data.bookings;
+                if (data && data.bookings) {
+                    const newBookings = data.bookings;
+                    let playSound = false;
+                    
+                    newBookings.forEach(b => {
+                        if (b && b.id) {
+                            const idStr = b.id.toString();
+                            if (!previousBookingIds.has(idStr) && b.status === 'Нове') {
+                                playSound = true;
+                            }
+                        }
+                    });
+                    
+                    // Update tracked IDs
+                    previousBookingIds = new Set(newBookings.map(b => b.id ? b.id.toString() : ''));
+                    
+                    bookings = newBookings;
                     renderTable();
+                    
+                    if (playSound) {
+                        playNotificationSound();
+                    }
                 }
             });
         }
@@ -633,7 +701,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial render and sync
     syncWithCloud().then(data => {
-        bookings = data.bookings;
-        renderTable();
+        if (data && data.bookings) {
+            bookings = data.bookings;
+            // Initialize known booking IDs so we don't trigger sound on initial page load
+            previousBookingIds = new Set(bookings.map(b => b.id ? b.id.toString() : ''));
+            renderTable();
+        }
     });
 });
