@@ -1,0 +1,11 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # Route /api/data to /api/data.php natively
+  RewriteRule ^api/data/?$ api/data.php [L,QSA]
+  
+  # Remove .html extension from URLs for clean URLs (matches Vercel)
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME}\.html -f
+  RewriteRule ^(.*)$ $1.html [L]
+</IfModule>
