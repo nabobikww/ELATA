@@ -180,7 +180,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formattedDates = `${formatDate(checkin)} - ${formatDate(checkout)}`;
                 
                 const now = new Date();
-                const exactTime = `${now.getDate().toString().padStart(2, '0')}.${(now.getMonth() + 1).toString().padStart(2, '0')}.${now.getFullYear()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+                const kyivParts = new Intl.DateTimeFormat('uk-UA', {
+                    timeZone: 'Europe/Kyiv',
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                }).formatToParts(now);
+
+                const getPart = (type) => kyivParts.find(p => p.type === type).value;
+                const exactTime = `${getPart('day')}.${getPart('month')}.${getPart('year')} ${getPart('hour')}:${getPart('minute')}`;
 
                 // Створюємо об'єкт бронювання
                 const newBooking = {
