@@ -1,8 +1,8 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   
-  # Route /api/data to /api/data.php natively
-  RewriteRule ^api/data/?$ api/data.php [L,QSA]
+  # Route /api/data to /api/data-php.php natively
+  RewriteRule ^api/data/?$ api/data-php.php [L,QSA]
   
   # Remove .html extension from URLs for clean URLs (matches Vercel)
   RewriteCond %{REQUEST_FILENAME} !-d
