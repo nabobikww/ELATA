@@ -486,6 +486,213 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function exportToExcel() {
+        if (!bookings || bookings.length === 0) {
+            alert("Немає бронювань для експорту.");
+            return;
+        }
+
+        // Header row
+        const headers = ["ID", "Гість", "Телефон", "Номер", "Дати", "Статус", "Час створення", "Коментар"];
+        
+        // Rows
+        const rows = bookings.map(b => [
+            b.id || "",
+            b.name || "",
+            b.phone || "",
+            b.room || "",
+            b.dates || "",
+            b.status || "",
+            b.createdAt || "",
+            b.comment ? b.comment.replace(/\r?\n|\r/g, " ") : ""
+        ]);
+
+        // Escape double quotes and join with semicolons for European/Excel region parsing compatibility
+        const csvContent = "\uFEFF" + [headers, ...rows]
+            .map(e => e.map(val => `"${val.toString().replace(/"/g, '""')}"`).join(";"))
+            .join("\n");
+
+        // Download trigger
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `elata_bookings_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function exportToPdf() {
+        if (!bookings || bookings.length === 0) {
+            alert("Немає бронювань для експорту.");
+            return;
+        }
+
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) {
+            alert("Будь ласка, дозвольте спливаючі вікна для експорту PDF.");
+            return;
+        }
+
+        let tableRows = "";
+        bookings.forEach(b => {
+            const statusClass = b.status === 'Нове' ? 'status-new' :
+                                b.status === 'Підтвернено' ? 'status-confirmed' : 'status-rejected';
+            tableRows += `
+                <tr>
+                    <td>#${b.id}</td>
+                    <td><strong>${b.name}</strong></td>
+                    <td>${b.phone}</td>
+                    <td>${b.room}</td>
+                    <td>${b.dates}</td>
+                    <td><span class="status-badge ${statusClass}">${b.status}</span></td>
+                    <td style="font-size: 0.8rem; color: #7f8c8d;">${b.createdAt || '-'}</td>
+                </tr>
+            `;
+        });
+
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>Звіт про бронювання — Elata Aparts</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        color: #1a1a1a;
+                        margin: 2rem;
+                        background: #fff;
+                    }
+                    .header {
+                        text-align: center;
+                        border-bottom: 2px solid #c5a880;
+                        padding-bottom: 1.5rem;
+                        margin-bottom: 2rem;
+                    }
+                    .header h1 {
+                        margin: 0;
+                        font-size: 2rem;
+                        letter-spacing: 2px;
+                        color: #0b0c0e;
+                        font-weight: 600;
+                    }
+                    .header p {
+                        margin: 0.5rem 0 0 0;
+                        color: #8a7a6b;
+                        font-size: 0.95rem;
+                    }
+                    .meta-row {
+                        display: flex;
+                        justify-content: space-between;
+                        font-size: 0.85rem;
+                        color: #7f8c8d;
+                        margin-bottom: 1.5rem;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 2rem;
+                    }
+                    th, td {
+                        padding: 0.75rem 1rem;
+                        text-align: left;
+                        border-bottom: 1px solid #e2e8f0;
+                    }
+                    th {
+                        background-color: #f8fafc;
+                        color: #475569;
+                        font-weight: 600;
+                        font-size: 0.85rem;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        border-bottom: 2px solid #cbd5e1;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f8fafc;
+                    }
+                    .status-badge {
+                        display: inline-block;
+                        padding: 0.25rem 0.6rem;
+                        border-radius: 4px;
+                        font-size: 0.75rem;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                    }
+                    .status-new {
+                        background-color: #e0f2fe;
+                        color: #0369a1;
+                    }
+                    .status-confirmed {
+                        background-color: #dcfce7;
+                        color: #15803d;
+                    }
+                    .status-rejected {
+                        background-color: #fee2e2;
+                        color: #b91c1c;
+                    }
+                    @media print {
+                        body {
+                            margin: 1.5cm;
+                        }
+                        button {
+                            display: none;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <h1>ELATA APARTS</h1>
+                    <p>Звіт про бронювання та заявки клієнтів</p>
+                </div>
+                <div class="meta-row">
+                    <span>Сформовано: ${new Date().toLocaleString('uk-UA')}</span>
+                    <span>Всього бронювань: ${bookings.length}</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Гість</th>
+                            <th>Телефон</th>
+                            <th>Номер</th>
+                            <th>Дати</th>
+                            <th>Статус</th>
+                            <th>Дата створення</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() { window.close(); }, 500);
+                    };
+                </script>
+            </body>
+            </html>
+        `;
+
+        printWindow.document.write(htmlContent);
+        printWindow.document.close();
+    }
+
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    if (exportExcelBtn) {
+        exportExcelBtn.addEventListener('click', exportToExcel);
+    }
+
+    const exportPdfBtn = document.getElementById('exportPdfBtn');
+    if (exportPdfBtn) {
+        exportPdfBtn.addEventListener('click', exportToPdf);
+    }
+
     document.getElementById('refreshBtn').addEventListener('click', () => {
         syncWithCloud().then(data => {
             bookings = data.bookings;
