@@ -7,6 +7,7 @@
     "start": "echo 'No start script needed, Vercel serves static files and serverless functions natively'"
   },
   "dependencies": {
-    "heic-convert": "^2.1.0"
+    "heic-convert": "^2.1.0",
+    "ssh2": "^1.17.0"
   }
 }

