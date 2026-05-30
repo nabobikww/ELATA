@@ -56,6 +56,39 @@ function sendTelegramNotification($b) {
     }
 }
 
+function sendCustomerStatusNotification($b) {
+    $tg_bot_token = getenv('TELEGRAM_BOT_TOKEN') ?: '8698453460:AAFtQI4lzlQKEjZtWd71u7hBxFsOGfuHWRU';
+    if (!isset($b['customerChatId']) || empty($b['customerChatId'])) {
+        return;
+    }
+
+    $statusText = '';
+    if ($b['status'] === 'Підтверджено') {
+        $statusText = "🎉 *Вітаємо! Ваше бронювання #" . $b['id'] . " підтверджено!* ✅\n\nЧекаємо на вас у нашому комплексі!\n📅 *Дати:* " . $b['dates'] . "\n🏨 *Номер:* " . $b['room'];
+    } elseif ($b['status'] === 'Відхилено') {
+        $statusText = "❌ *Повідомлення щодо бронювання #" . $b['id'] . ":*\n\nНа жаль, ваше бронювання було відхилено менеджером комплексу. Будь ласка, зверніться до адміністратора для детальної інформації.";
+    } else {
+        return;
+    }
+
+    $url = "https://api.telegram.org/bot" . $tg_bot_token . "/sendMessage";
+    $payload = array(
+        'chat_id' => $b['customerChatId'],
+        'text' => $statusText,
+        'parse_mode' => 'Markdown'
+    );
+
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_exec($ch);
+    curl_close($ch);
+}
+
 function handleTelegramWebhook($update) {
     $tg_bot_token = getenv('TELEGRAM_BOT_TOKEN') ?: '8698453460:AAFtQI4lzlQKEjZtWd71u7hBxFsOGfuHWRU';
     $tg_chat_id = getenv('TELEGRAM_CHAT_ID') ?: '6239669001';
@@ -69,18 +102,246 @@ function handleTelegramWebhook($update) {
     $text = isset($update['message']['text']) ? trim($update['message']['text']) : '';
 
     $authorized_ids = array_map('trim', explode(',', $tg_chat_id));
-    
-    if (!in_array($chat_id, $authorized_ids)) {
-        $url = "https://api.telegram.org/bot" . $tg_bot_token . "/sendMessage";
-        $payload = array(
+    $is_manager = in_array($chat_id, $authorized_ids);
+
+    $is_customer_command = (strpos($text, '/start ') === 0 && count(explode(' ', $text)) > 1) ||
+                           strpos($text, '📊 Стежити за бронюванням #') === 0 ||
+                           $text === '📞 Зв\'язатися з менеджером';
+
+    $send_url = "https://api.telegram.org/bot" . $tg_bot_token . "/sendMessage";
+
+    if (!$is_manager || $is_customer_command) {
+        // Customer Flow in PHP
+        if (strpos($text, '/start') === 0) {
+            $parts = explode(' ', $text);
+            if (count($parts) > 1) {
+                $bookingId = trim($parts[1]);
+
+                // Fetch Database
+                $ch_get = curl_init();
+                curl_setopt($ch_get, CURLOPT_URL, $db_url);
+                curl_setopt($ch_get, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch_get, CURLOPT_FOLLOWLOCATION, true);
+                curl_setopt($ch_get, CURLOPT_SSL_VERIFYPEER, false);
+                $get_response = curl_exec($ch_get);
+                curl_close($ch_get);
+
+                $data = json_decode($get_response, true);
+                $inner_data = isset($data['data']) ? $data['data'] : $data;
+                $bookings = isset($inner_data['bookings']) ? $inner_data['bookings'] : array();
+                $blocked_dates = isset($inner_data['blocked_dates']) ? $inner_data['blocked_dates'] : array();
+
+                $bIndex = -1;
+                foreach ($bookings as $i => $b) {
+                    if (isset($b['id']) && strval($b['id']) === $bookingId) {
+                        $bIndex = $i;
+                        break;
+                    }
+                }
+
+                if ($bIndex > -1) {
+                    // Link customerChatId
+                    $bookings[$bIndex]['customerChatId'] = $chat_id;
+
+                    // Save Database
+                    $payload = array(
+                        'bookings' => $bookings,
+                        'blocked_dates' => $blocked_dates
+                    );
+                    $ch_put = curl_init();
+                    curl_setopt($ch_put, CURLOPT_URL, $db_url);
+                    curl_setopt($ch_put, CURLOPT_CUSTOMREQUEST, 'PUT');
+                    curl_setopt($ch_put, CURLOPT_POSTFIELDS, json_encode($payload));
+                    curl_setopt($ch_put, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch_put, CURLOPT_FOLLOWLOCATION, true);
+                    curl_setopt($ch_put, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($ch_put, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                    curl_exec($ch_put);
+                    curl_close($ch_put);
+
+                    $reply_markup = array(
+                        'keyboard' => array(
+                            array(array('text' => "📊 Стежити за бронюванням #" . $bookingId)),
+                            array(array('text' => "📞 Зв'язатися з менеджером"))
+                        ),
+                        'resize_keyboard' => true,
+                        'one_time_keyboard' => false
+                    );
+                    $payload_msg = array(
+                        'chat_id' => $chat_id,
+                        'text' => "👋 *Вітаємо в Elata Aparts!*\n\nМи успішно зв'язали цей акаунт із вашим бронюванням *#" . $bookingId . "*.\n\nТепер ви отримуватимете автоматичні сповіщення, як тільки статус вашої заявки зміниться!",
+                        'parse_mode' => 'Markdown',
+                        'reply_markup' => $reply_markup
+                    );
+
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $send_url);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload_msg));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                    curl_exec($ch);
+                    curl_close($ch);
+                } else {
+                    $payload_msg = array(
+                        'chat_id' => $chat_id,
+                        'text' => "❌ *Помилка!* Бронювання з номером *#" . $bookingId . "* не знайдено в нашій базі.\n\nБудь ласка, перевірте номер або зверніться до нашого менеджера.",
+                        'parse_mode' => 'Markdown'
+                    );
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $send_url);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload_msg));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                    curl_exec($ch);
+                    curl_close($ch);
+                }
+                return;
+            } else {
+                $reply_markup = array(
+                    'keyboard' => array(
+                        array(array('text' => "📞 Зв'язатися з менеджером"))
+                    ),
+                    'resize_keyboard' => true,
+                    'one_time_keyboard' => false
+                );
+                $payload_msg = array(
+                    'chat_id' => $chat_id,
+                    'text' => "👋 *Вітаємо в Elata Aparts!*\n\nВи зайшли як гість нашого комплексу. Якщо ви забронювали номер на нашому сайті, будь ласка, скористайтеся кнопкою після бронювання, щоб налаштувати відстеження статусу.\n\nАбо виберіть дію нижче:",
+                    'parse_mode' => 'Markdown',
+                    'reply_markup' => $reply_markup
+                );
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $send_url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload_msg));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                curl_exec($ch);
+                curl_close($ch);
+                return;
+            }
+        }
+
+        if (strpos($text, '📊 Стежити за бронюванням #') === 0) {
+            $bookingId = trim(str_replace('📊 Стежити за бронюванням #', '', $text));
+
+            $ch_get = curl_init();
+            curl_setopt($ch_get, CURLOPT_URL, $db_url);
+            curl_setopt($ch_get, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch_get, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch_get, CURLOPT_SSL_VERIFYPEER, false);
+            $get_response = curl_exec($ch_get);
+            curl_close($ch_get);
+
+            $data = json_decode($get_response, true);
+            $inner_data = isset($data['data']) ? $data['data'] : $data;
+            $bookings = isset($inner_data['bookings']) ? $inner_data['bookings'] : array();
+
+            $found_b = null;
+            foreach ($bookings as $b) {
+                if (isset($b['id']) && strval($b['id']) === $bookingId) {
+                    $found_b = $b;
+                    break;
+                }
+            }
+
+            if ($found_b) {
+                $statusText = '';
+                if ($found_b['status'] === 'Нове') {
+                    $statusText = '📥 *Нове (Очікує на підтвердження менеджером)*';
+                } elseif ($found_b['status'] === 'Підтверджено') {
+                    $statusText = '✅ *Підтверджено менеджером*';
+                } else {
+                    $statusText = '❌ *Відхилено*';
+                }
+
+                $msg = "📊 *Статус вашого бронювання #" . $bookingId . ":*\n\n"
+                     . "👤 *Гість:* " . $found_b['name'] . "\n"
+                     . "🏨 *Номер:* " . $found_b['room'] . "\n"
+                     . "📅 *Дати:* " . $found_b['dates'] . "\n\n"
+                     . "📊 *Статус:* " . $statusText . "\n\n"
+                     . "💬 _Ми надішлемо вам автоматичне повідомлення у разі зміни статусу!_";
+
+                $payload_msg = array(
+                    'chat_id' => $chat_id,
+                    'text' => $msg,
+                    'parse_mode' => 'Markdown'
+                );
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $send_url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload_msg));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                curl_exec($ch);
+                curl_close($ch);
+            } else {
+                $payload_msg = array(
+                    'chat_id' => $chat_id,
+                    'text' => "❌ *Бронювання #" . $bookingId . " не знайдено.* Можливо, воно було скасоване.",
+                    'parse_mode' => 'Markdown'
+                );
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $send_url);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload_msg));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+                curl_exec($ch);
+                curl_close($ch);
+            }
+            return;
+        }
+
+        if ($text === '📞 Зв\'язатися з менеджером') {
+            $msg = "📞 *Зв'язок з адміністратором Elata Aparts:*\n\n"
+                 . "📍 *Адреса:* смт. Східниця, вул. Золота, 15\n"
+                 . "📱 *Телефон:* +38 (097) 123-45-67\n"
+                 . "💬 *Telegram:* @ElataManager\n\n"
+                 . "Будь ласка, зателефонуйте або напишіть нам, якщо у вас виникли будь-які запитання щодо відпочинку!";
+
+            $payload_msg = array(
+                'chat_id' => $chat_id,
+                'text' => $msg,
+                'parse_mode' => 'Markdown'
+            );
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $send_url);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload_msg));
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+            curl_exec($ch);
+            curl_close($ch);
+            return;
+        }
+
+        // Catch-all for guests
+        $reply_markup = array(
+            'keyboard' => array(
+                array(array('text' => "📞 Зв'язатися з менеджером"))
+            ),
+            'resize_keyboard' => true,
+            'one_time_keyboard' => false
+        );
+        $payload_msg = array(
             'chat_id' => $chat_id,
-            'text' => "❌ *Доступ заборонено.* Ви не є зареєстрованим менеджером Elata Aparts.",
-            'parse_mode' => 'Markdown'
+            'text' => "❓ *Невідома команда.*\n\nБудь ласка, використовуйте кнопки на клавіатурі нижче:",
+            'parse_mode' => 'Markdown',
+            'reply_markup' => $reply_markup
         );
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_URL, $send_url);
         curl_setopt($ch, CURLOPT_POST, true);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload_msg));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
@@ -89,8 +350,7 @@ function handleTelegramWebhook($update) {
         return;
     }
 
-    $send_url = "https://api.telegram.org/bot" . $tg_bot_token . "/sendMessage";
-
+    // Manager Flow
     if ($text === '/start' || stripos($text, 'меню') !== false || stripos($text, 'привіт') !== false) {
         $reply_markup = array(
             'keyboard' => array(
@@ -253,7 +513,7 @@ if ($method === 'GET') {
         exit(0);
     }
     
-    // 1. Fetch old bookings to detect if a brand new booking is being added
+    // 1. Fetch old bookings to detect if a brand new booking is being added OR if an existing booking status changed
     $old_bookings = array();
     $ch_get = curl_init();
     curl_setopt($ch_get, CURLOPT_URL, $db_url);
@@ -272,27 +532,58 @@ if ($method === 'GET') {
     }
     curl_close($ch_get);
     
+    $old_map = array();
     $old_ids = array();
     foreach ($old_bookings as $ob) {
         if (isset($ob['id'])) {
-            $old_ids[] = strval($ob['id']);
+            $id_str = strval($ob['id']);
+            $old_ids[] = $id_str;
+            $old_map[$id_str] = $ob;
         }
     }
     
     $new_bookings = array();
+    $changed_bookings = array();
+    $payload_modified = false;
+    
     if (isset($payload['bookings']) && is_array($payload['bookings'])) {
-        foreach ($payload['bookings'] as $b) {
-            if (isset($b['id']) && !in_array(strval($b['id']), $old_ids) && isset($b['status']) && $b['status'] === 'Нове') {
+        foreach ($payload['bookings'] as $key => $b) {
+            if (!isset($b['id'])) continue;
+            $id_str = strval($b['id']);
+            
+            // Detect brand new bookings
+            if (!in_array($id_str, $old_ids) && isset($b['status']) && $b['status'] === 'Нове') {
                 $new_bookings[] = $b;
+            }
+            
+            // Detect status changes & merge customerChatId
+            if (isset($old_map[$id_str])) {
+                $old_b = $old_map[$id_str];
+                
+                // Merge customerChatId if not present in new payload to protect relationship
+                if (isset($old_b['customerChatId']) && !empty($old_b['customerChatId']) && (!isset($b['customerChatId']) || empty($b['customerChatId']))) {
+                    $payload['bookings'][$key]['customerChatId'] = $old_b['customerChatId'];
+                    $b['customerChatId'] = $old_b['customerChatId'];
+                    $payload_modified = true;
+                }
+                
+                // If status changed and it is no longer "Нове"
+                if (isset($b['status']) && isset($old_b['status']) && $old_b['status'] !== $b['status'] && $b['status'] !== 'Нове') {
+                    if (isset($b['customerChatId']) && !empty($b['customerChatId'])) {
+                        $changed_bookings[] = $b;
+                    }
+                }
             }
         }
     }
+    
+    $db_input = $payload_modified ? json_encode($payload) : $input;
     
     // 2. Save new payload to cloud database
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $db_url);
     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $input);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $db_input);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -311,6 +602,13 @@ if ($method === 'GET') {
         if (count($new_bookings) > 0) {
             foreach ($new_bookings as $b) {
                 sendTelegramNotification($b);
+            }
+        }
+        
+        // Trigger customer status notifications
+        if (count($changed_bookings) > 0) {
+            foreach ($changed_bookings as $b) {
+                sendCustomerStatusNotification($b);
             }
         }
         

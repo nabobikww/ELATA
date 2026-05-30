@@ -208,7 +208,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Атомарно додаємо нове бронювання в хмару (pushToCloud оновить і локальний кеш)
                 await pushToCloud(newBooking);
 
-                alert('Дякуємо! Ваше бронювання надіслано менеджеру. Дати будуть зарезервовані після підтвердження заявки.');
+                // Закриваємо модалку бронювання
+                closeModal();
+
+                // Відображаємо Success Modal з динамічним ID та посиланням на Telegram
+                const successModal = document.getElementById('successModal');
+                const successBookingId = document.getElementById('successBookingId');
+                const successTelegramBtn = document.getElementById('successTelegramBtn');
+
+                if (successBookingId) successBookingId.innerText = `#${newId}`;
+                if (successTelegramBtn) successTelegramBtn.href = `https://t.me/ElataAbot?start=${newId}`;
+                if (successModal) successModal.classList.add('active');
+
                 bookingForm.reset();
                 
                 // Скидаємо календар
@@ -219,9 +230,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 selectedCheckoutVal = "";
                 btnGoToStep2.disabled = true;
                 dateRecapText.innerText = "Дати ще не обрано";
-                
-                // Закриваємо модалку
-                closeModal();
             } catch (err) {
                 console.error(err);
                 alert('Сталася помилка при збереженні бронювання. Спробуйте пізніше.');
@@ -987,6 +995,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
     if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
 
+    // Success Modal closing logic
+    const successModalEl = document.getElementById('successModal');
+    const closeSuccessModalBtn = document.getElementById('closeSuccessModal');
+    const successModalOverlay = document.querySelector('#successModal .modal-overlay');
+
+    const closeSuccessModal = () => {
+        if (successModalEl) successModalEl.classList.remove('active');
+    };
+
+    if (closeSuccessModalBtn) closeSuccessModalBtn.addEventListener('click', closeSuccessModal);
+    if (successModalOverlay) successModalOverlay.addEventListener('click', closeSuccessModal);
+
     // Escape key to close modals
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
@@ -995,6 +1015,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 if (bookingModal && bookingModal.classList.contains('active')) {
                     closeModal();
+                }
+                if (successModalEl && successModalEl.classList.contains('active')) {
+                    closeSuccessModal();
                 }
                 if (imageModal && imageModal.classList.contains('active')) {
                     imageModal.classList.remove('active');

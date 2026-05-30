@@ -1126,6 +1126,33 @@
         </div>
     </div>
 
+    <!-- Success Booking Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-overlay"></div>
+        <div class="modal-container success-modal-container">
+            <button class="modal-close" id="closeSuccessModal">&times;</button>
+            <div class="success-modal-content">
+                <div class="success-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="success-check-icon">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h3>Дякуємо за бронювання!</h3>
+                <p class="success-booking-id">Ваш номер заявки: <strong id="successBookingId">#1234</strong></p>
+                <p class="success-booking-desc">Ми надіслали заявку менеджеру. Дати будуть зарезервовані після підтвердження.</p>
+                
+                <div class="success-telegram-section">
+                    <h4>Бажаєте миттєво дізнатися про статус?</h4>
+                    <p>Стежте за підтвердженням замовлення у реальному часі через нашого Telegram-бота.</p>
+                    <a href="#" id="successTelegramBtn" target="_blank" class="btn-primary btn-telegram-track">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" style="margin-right: 8px; vertical-align: middle;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.24-5.54 3.65-.52.36-.97.53-1.33.52-.4-.01-1.18-.23-1.76-.42-.71-.23-1.27-.35-1.22-.75.02-.21.31-.42.87-.64 3.39-1.47 5.65-2.44 6.77-2.9 3.22-1.33 3.89-1.56 4.33-1.57.1.01.32.03.46.15.12.1.15.24.17.34-.02.06-.01.12-.02.16z"/></svg>
+                        Стежити за статусом
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Premium In-App Browser Detour Overlay -->
     <div id="inAppOverlay" class="in-app-overlay hidden">
         <div class="in-app-modal">

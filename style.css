@@ -4385,3 +4385,131 @@ body.modal-open {
 .room-card-image-wrap img {
     cursor: pointer !important;
 }
+
+/* Success Booking Modal Styling */
+.success-modal-container {
+    max-width: 540px !important;
+    padding: 3rem 2.2rem !important;
+    text-align: center;
+    background: var(--bg-secondary) !important;
+    border: 1px solid rgba(197, 168, 128, 0.25) !important;
+    box-shadow: var(--shadow-premium) !important;
+    border-radius: var(--radius-lg) !important;
+    animation: modalSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.success-icon-wrap {
+    margin: 0 auto 1.5rem;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(39, 174, 96, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #27ae60;
+    box-shadow: 0 0 20px rgba(39, 174, 96, 0.15);
+}
+
+.success-check-icon {
+    width: 36px;
+    height: 36px;
+    color: #27ae60;
+}
+
+.success-modal-content h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #ffffff !important;
+    margin-bottom: 0.5rem;
+}
+
+.success-booking-id {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    color: var(--clr-champagne);
+    margin-bottom: 0.8rem;
+}
+
+.success-booking-id strong {
+    font-weight: 600;
+    color: #ffffff;
+    background: rgba(197, 168, 128, 0.15);
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid rgba(197, 168, 128, 0.2);
+    margin-left: 4px;
+}
+
+.success-booking-desc {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 2rem;
+}
+
+.success-telegram-section {
+    background: rgba(17, 20, 22, 0.4);
+    border: 1px dashed rgba(197, 168, 128, 0.2);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: 1.5rem;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.success-telegram-section h4 {
+    font-size: 1.05rem;
+    color: #ffffff;
+    font-family: 'Outfit', sans-serif;
+    margin-bottom: 0.6rem;
+    font-weight: 500;
+}
+
+.success-telegram-section p {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.2rem;
+    line-height: 1.4;
+}
+
+.btn-telegram-track {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 0.9rem 2rem !important;
+    border-radius: 50px !important;
+    font-size: 0.88rem !important;
+    letter-spacing: 0.05em !important;
+    text-transform: none !important;
+    font-weight: 600 !important;
+    background: #0088cc !important;
+    border: 1px solid #0088cc !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(0, 136, 204, 0.25) !important;
+    transition: var(--transition-smooth) !important;
+}
+
+.btn-telegram-track:hover {
+    background: #0099e6 !important;
+    border-color: #0099e6 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4) !important;
+}
+
+@media (max-width: 576px) {
+    .success-modal-container {
+        padding: 2.2rem 1.2rem !important;
+        margin: 0 1rem;
+    }
+    .success-modal-content h3 {
+        font-size: 1.5rem;
+    }
+    .success-booking-desc {
+        font-size: 0.85rem;
+    }
+    .success-telegram-section {
+        padding: 1rem;
+    }
+}
+
