@@ -43,6 +43,138 @@ async function sendTelegramNotification(b) {
     }
 }
 
+async function handleTelegramWebhook(update, res) {
+    const TG_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8698453460:AAFtQI4lzlQKEjZtWd71u7hBxFsOGfuHWRU';
+    const TG_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '6239669001';
+
+    const message = update.message;
+    if (!message || !message.chat || !message.chat.id) {
+        return res.status(200).json({ ok: true });
+    }
+
+    const chatId = message.chat.id.toString();
+    const text = message.text ? message.text.trim() : '';
+
+    const authorizedIds = TG_CHAT_ID.split(',').map(id => id.trim());
+    if (!authorizedIds.includes(chatId)) {
+        await fetch(`https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: "❌ *Доступ заборонено.* Ви не є зареєстрованим менеджером Elata Aparts.",
+                parse_mode: 'Markdown'
+            })
+        });
+        return res.status(200).json({ ok: true });
+    }
+
+    const sendMessageUrl = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`;
+
+    if (text === '/start' || text.toLowerCase().includes('меню') || text.toLowerCase().includes('привіт')) {
+        await fetch(sendMessageUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: "👋 *Вітаємо в Elata Aparts Bot!*\n\nВиберіть опцію в меню нижче:",
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    keyboard: [[{ text: "📂 Переглянути усі бронювання" }]],
+                    resize_keyboard: true,
+                    one_time_keyboard: false
+                }
+            })
+        });
+    } else if (text === "📂 Переглянути усі бронювання" || text === '/bookings') {
+        try {
+            const dbResponse = await fetch(DB_URL);
+            if (!dbResponse.ok) {
+                throw new Error("Failed to fetch database");
+            }
+            const data = await dbResponse.json();
+            const bookings = (data.data || data).bookings || [];
+
+            if (bookings.length === 0) {
+                await fetch(sendMessageUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: "📭 *Бронювань поки немає.*",
+                        parse_mode: 'Markdown'
+                    })
+                });
+                return res.status(200).json({ ok: true });
+            }
+
+            const sortedBookings = [...bookings].sort((a, b) => {
+                const idA = a && a.id ? parseInt(a.id) || 0 : 0;
+                const idB = b && b.id ? parseInt(b.id) || 0 : 0;
+                return idB - idA;
+            });
+
+            const limit = 10;
+            const recentBookings = sortedBookings.slice(0, limit);
+
+            let msg = `📂 *Останні ${recentBookings.length} бронювань (від нових до старих):*\n\n`;
+            for (const b of recentBookings) {
+                const statusEmoji = b.status === 'Нове' ? '📥' : (b.status === 'Підтверджено' ? '✅' : '❌');
+                const comment = b.comment ? b.comment : '-';
+                msg += `${statusEmoji} *Бронювання #${b.id}*\n`
+                     + `👤 *Гість:* ${b.name}\n`
+                     + `📞 *Телефон:* ${b.phone}\n`
+                     + `🏨 *Номер:* ${b.room}\n`
+                     + `📅 *Дати:* ${b.dates}\n`
+                     + `💬 *Коментар:* ${comment}\n`
+                     + `📊 *Статус:* ${b.status}\n\n`;
+            }
+
+            if (bookings.length > limit) {
+                msg += `ℹ️ _Показано ${limit} останніх бронювань з ${bookings.length} всього._`;
+            }
+
+            await fetch(sendMessageUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: msg,
+                    parse_mode: 'Markdown'
+                })
+            });
+        } catch (err) {
+            console.error(err);
+            await fetch(sendMessageUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: "❌ *Помилка при отриманні списку бронювань.* Спробуйте пізніше.",
+                    parse_mode: 'Markdown'
+                })
+            });
+        }
+    } else {
+        await fetch(sendMessageUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: "❓ *Невідома команда.* Будь ласка, скористайтеся кнопкою в меню нижче:",
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    keyboard: [[{ text: "📂 Переглянути усі бронювання" }]],
+                    resize_keyboard: true,
+                    one_time_keyboard: false
+                }
+            })
+        });
+    }
+
+    return res.status(200).json({ ok: true });
+}
+
 module.exports = async (req, res) => {
     // Enable CORS for local testing (e.g. file:/// or localhost)
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -70,6 +202,11 @@ module.exports = async (req, res) => {
         } else if (req.method === 'PUT' || req.method === 'POST') {
             const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
             
+            // Check if this is a Telegram Webhook Update
+            if (payload && (payload.update_id || payload.message || payload.callback_query)) {
+                return await handleTelegramWebhook(payload, res);
+            }
+
             // 1. Fetch old bookings to detect if a brand new booking is being added
             let newBookings = [];
             try {
