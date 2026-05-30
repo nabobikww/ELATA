@@ -3327,34 +3327,43 @@ body.modal-open {
 
     .rooms-mini-list {
         display: flex !important;
-        flex-direction: column !important;
-        overflow-y: auto !important;
-        overflow-x: hidden !important;
+        flex-direction: row !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scroll-snap-type: x mandatory !important;
         gap: 0.6rem !important;
-        max-height: 260px !important;
-        padding: 0.2rem 0.5rem !important;
+        max-height: none !important;
+        padding: 0.2rem 6% 0.5rem 6% !important;
+        scrollbar-width: none !important;
         width: 100% !important;
     }
 
     .rooms-mini-list::-webkit-scrollbar {
-        display: block !important;
-        width: 4px !important;
-    }
-    .rooms-mini-list::-webkit-scrollbar-track {
-        background: rgba(197, 168, 128, 0.03) !important;
-    }
-    .rooms-mini-list::-webkit-scrollbar-thumb {
-        background: rgba(197, 168, 128, 0.25) !important;
-        border-radius: 4px !important;
-    }
-
-    .scroll-hint {
         display: none !important;
     }
 
+    .scroll-hint {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        font-size: 0.64rem !important;
+        font-weight: 600;
+        color: var(--clr-champagne) !important;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.35rem !important;
+        text-transform: uppercase;
+        opacity: 0.85;
+        animation: pulseScrollHint 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseScrollHint {
+        0%, 100% { opacity: 0.65; transform: translateY(0); }
+        50% { opacity: 1; transform: translateY(-1px); }
+    }
+
     .room-mini-card {
-        flex: 0 0 auto !important;
-        width: 100% !important;
+        flex: 0 0 88% !important;
+        scroll-snap-align: center !important;
         padding: 0.45rem 0.6rem !important;
         border: 1px solid rgba(197, 168, 128, 0.15) !important;
         background: var(--clr-milk) !important;
@@ -3531,7 +3540,13 @@ body.modal-open {
     }
 
     .mini-list-pagination {
-        display: none !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        gap: 0.35rem !important;
+        margin-top: 0.2rem !important;
+        margin-bottom: 0.3rem !important;
+        width: 100% !important;
     }
 
     .pagination-bullet {
