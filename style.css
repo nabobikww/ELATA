@@ -2229,9 +2229,24 @@ body.modal-open {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    max-height: none;
-    overflow-y: visible;
-    padding-right: 0;
+    max-height: 480px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.rooms-mini-list::-webkit-scrollbar {
+    width: 6px;
+}
+.rooms-mini-list::-webkit-scrollbar-track {
+    background: rgba(197, 168, 128, 0.03);
+    border-radius: 4px;
+}
+.rooms-mini-list::-webkit-scrollbar-thumb {
+    background: rgba(197, 168, 128, 0.25);
+    border-radius: 4px;
+}
+.rooms-mini-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(197, 168, 128, 0.45);
 }
 
 .room-mini-card {
@@ -3312,49 +3327,41 @@ body.modal-open {
 
     .rooms-mini-list {
         display: flex !important;
-        flex-direction: row !important;
-        overflow-x: auto !important;
-        scroll-snap-type: x mandatory !important;
+        flex-direction: column !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
         gap: 0.6rem !important;
-        max-height: none !important;
-        padding: 0.2rem 6% 0.5rem 6% !important; /* Perfect side paddings for centered card */
-        scrollbar-width: none;
+        max-height: 260px !important;
+        padding: 0.2rem 0.5rem !important;
         width: 100% !important;
     }
 
     .rooms-mini-list::-webkit-scrollbar {
-        display: none;
+        display: block !important;
+        width: 4px !important;
+    }
+    .rooms-mini-list::-webkit-scrollbar-track {
+        background: rgba(197, 168, 128, 0.03) !important;
+    }
+    .rooms-mini-list::-webkit-scrollbar-thumb {
+        background: rgba(197, 168, 128, 0.25) !important;
+        border-radius: 4px !important;
     }
 
     .scroll-hint {
-        display: flex !important;
-        justify-content: center;
-        align-items: center;
-        font-size: 0.64rem !important;
-        font-weight: 600;
-        color: var(--clr-champagne) !important;
-        letter-spacing: 0.05em;
-        margin-bottom: 0.35rem !important;
-        text-transform: uppercase;
-        opacity: 0.85;
-        animation: pulseScrollHint 2s infinite ease-in-out;
-    }
-
-    @keyframes pulseScrollHint {
-        0%, 100% { opacity: 0.65; transform: translateY(0); }
-        50% { opacity: 1; transform: translateY(-1px); }
+        display: none !important;
     }
 
     .room-mini-card {
-        flex: 0 0 88% !important; /* Perfectly centered rounded cloud */
-        scroll-snap-align: center !important;
+        flex: 0 0 auto !important;
+        width: 100% !important;
         padding: 0.45rem 0.6rem !important;
         border: 1px solid rgba(197, 168, 128, 0.15) !important;
         background: var(--clr-milk) !important;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.02) !important;
         gap: 0.55rem !important;
-        border-radius: 16px !important; /* Rounded flat cloud shape */
-        overflow: hidden !important; /* Avoid content spilling out */
+        border-radius: 16px !important;
+        overflow: hidden !important;
     }
 
     .room-mini-card.active {
@@ -3524,13 +3531,7 @@ body.modal-open {
     }
 
     .mini-list-pagination {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
-        gap: 0.35rem !important;
-        margin-top: 0.2rem !important;
-        margin-bottom: 0.3rem !important;
-        width: 100% !important;
+        display: none !important;
     }
 
     .pagination-bullet {

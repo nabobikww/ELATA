@@ -698,6 +698,10 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         roomsMiniList.addEventListener('scroll', () => {
+            // Bypass scroll synchronization and auto-selection if the list is in vertical/column mode
+            if (window.getComputedStyle(roomsMiniList).flexDirection === 'column') {
+                return;
+            }
             if (!isScrolling) {
                 isScrolling = true;
                 requestAnimationFrame(updatePagination);
