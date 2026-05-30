@@ -158,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             if (datesModal) datesModal.classList.remove('active');
             if (passwordsModal) passwordsModal.classList.remove('active');
+            if (pricesModal) pricesModal.classList.remove('active');
             if (modal) modal.classList.remove('active');
             setActiveTab('mobileNavBookings');
         });
@@ -167,6 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileNavDates.addEventListener('click', (e) => {
             e.preventDefault();
             if (passwordsModal) passwordsModal.classList.remove('active');
+            if (pricesModal) pricesModal.classList.remove('active');
             if (modal) modal.classList.remove('active');
             renderBlockedDates();
             datesModal.classList.add('active');
@@ -178,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mobileNavPasswords.addEventListener('click', (e) => {
             e.preventDefault();
             if (datesModal) datesModal.classList.remove('active');
+            if (pricesModal) pricesModal.classList.remove('active');
             if (modal) modal.classList.remove('active');
             renderUsersList();
             passwordsModal.classList.add('active');
@@ -233,7 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('elata_bookings_v2', JSON.stringify(cloudBookings));
             localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(cloudBlocked));
 
-            return { bookings: cloudBookings, blocked_dates: cloudBlocked };
+            const cloudPrices = cloudData.prices || {};
+            localStorage.setItem('elata_prices_v2', JSON.stringify(cloudPrices));
+
+            return { bookings: cloudBookings, blocked_dates: cloudBlocked, prices: cloudPrices };
         } catch (e) {
             console.warn("Cloud sync failed, using localStorage cache", e);
             return {
@@ -280,11 +286,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Set local blocked dates as authoritative (Fixes the zombie resurrection bug)
             const blocked_dates = JSON.parse(localStorage.getItem('elata_blocked_dates_v2')) || [];
+            const prices = JSON.parse(localStorage.getItem('elata_prices_v2')) || {};
 
             const putRes = await fetch('/api/data', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bookings, blocked_dates })
+                body: JSON.stringify({ bookings, blocked_dates, prices })
             });
 
             if (putRes.ok) {
@@ -869,6 +876,10 @@ document.addEventListener('DOMContentLoaded', () => {
             passwordsModal.classList.remove('active');
             setActiveTab('mobileNavBookings');
         }
+        if (e.target === pricesModal) {
+            pricesModal.classList.remove('active');
+            setActiveTab('mobileNavBookings');
+        }
     });
 
     let previousBookingIds = new Set();
@@ -877,7 +888,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(() => {
         if (isPushing || isSyncing) return;
         // Only refresh if modals are not active to prevent editing interference
-        if (!modal.classList.contains('active') && !datesModal.classList.contains('active') && !passwordsModal.classList.contains('active')) {
+        if (!modal.classList.contains('active') && !datesModal.classList.contains('active') && !passwordsModal.classList.contains('active') && !pricesModal.classList.contains('active')) {
             syncWithCloud().then(data => {
                 if (data && data.bookings) {
                     const newBookings = data.bookings;
@@ -905,6 +916,124 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     }, 10000);
+
+    // Prices Management Logic
+    const pricesModal = document.getElementById('pricesModal');
+    const managePricesBtnSidebar = document.getElementById('managePricesBtnSidebar');
+    const mobileNavPrices = document.getElementById('mobileNavPrices');
+    const closePricesModalBtn = document.getElementById('closePricesModal');
+    const cancelPricesModalBtn = document.getElementById('cancelPricesModal');
+    const savePricesModalBtn = document.getElementById('savePricesModal');
+    const pricesListBody = document.getElementById('pricesListBody');
+
+    const defaultPrices = {
+        "Двомісний": 2800,
+        "Сімейний": 3200,
+        "Апартаменти Преміум": 3880,
+        "Бюджетний двомісний": 2400,
+        "Двокімнатний «Преміум»": 4200,
+        "Двокімнатний «Делюкс»": 4000,
+        "Двомісний №2": 2800,
+        "Сімейний №2": 3200,
+        "Бюджетний двомісний №2": 2400
+    };
+
+    function getStoredPrices() {
+        try {
+            const stored = JSON.parse(localStorage.getItem('elata_prices_v2')) || {};
+            // Merge with defaults to ensure all rooms are present
+            return { ...defaultPrices, ...stored };
+        } catch (e) {
+            return defaultPrices;
+        }
+    }
+
+    function saveStoredPrices(prices) {
+        localStorage.setItem('elata_prices_v2', JSON.stringify(prices));
+        pushToCloud();
+    }
+
+    function renderPrices() {
+        if (!pricesListBody) return;
+        pricesListBody.innerHTML = '';
+        const prices = getStoredPrices();
+
+        Object.entries(prices).forEach(([roomName, priceVal]) => {
+            const tr = document.createElement('tr');
+
+            const tdName = document.createElement('td');
+            tdName.textContent = roomName;
+            tdName.style.fontWeight = '500';
+
+            const tdPrice = document.createElement('td');
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.value = priceVal;
+            input.min = '0';
+            input.style.width = '100%';
+            input.style.padding = '0.4rem';
+            input.style.borderRadius = '4px';
+            input.style.border = '1px solid var(--border-color)';
+            input.style.fontFamily = 'inherit';
+            input.className = 'room-price-input';
+            input.setAttribute('data-room-name', roomName);
+
+            tdPrice.appendChild(input);
+            tr.appendChild(tdName);
+            tr.appendChild(tdPrice);
+            pricesListBody.appendChild(tr);
+        });
+    }
+
+    const openPricesModal = (e) => {
+        if (e) e.preventDefault();
+        renderPrices();
+        if (pricesModal) pricesModal.classList.add('active');
+        setActiveTab('mobileNavPrices');
+    };
+
+    const closePricesModal = () => {
+        if (pricesModal) pricesModal.classList.remove('active');
+        setActiveTab('mobileNavBookings');
+    };
+
+    if (managePricesBtnSidebar) {
+        managePricesBtnSidebar.addEventListener('click', openPricesModal);
+    }
+    if (mobileNavPrices) {
+        mobileNavPrices.addEventListener('click', openPricesModal);
+    }
+    if (closePricesModalBtn) {
+        closePricesModalBtn.addEventListener('click', closePricesModal);
+    }
+    if (cancelPricesModalBtn) {
+        cancelPricesModalBtn.addEventListener('click', closePricesModal);
+    }
+
+    if (savePricesModalBtn) {
+        savePricesModalBtn.addEventListener('click', () => {
+            const inputs = document.querySelectorAll('.room-price-input');
+            const updatedPrices = {};
+            let hasError = false;
+
+            inputs.forEach(input => {
+                const roomName = input.getAttribute('data-room-name');
+                const priceVal = parseInt(input.value);
+
+                if (isNaN(priceVal) || priceVal < 0) {
+                    alert(`Будь ласка, введіть коректну ціну для номера "${roomName}".`);
+                    hasError = true;
+                    return;
+                }
+                updatedPrices[roomName] = priceVal;
+            });
+
+            if (hasError) return;
+
+            saveStoredPrices(updatedPrices);
+            closePricesModal();
+        });
+    }
 
     // Initial render and sync
     syncWithCloud().then(data => {

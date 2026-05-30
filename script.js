@@ -8,10 +8,14 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const cloudBookings = cloudData.bookings || [];
             const cloudBlocked = cloudData.blocked_dates || [];
+            const cloudPrices = cloudData.prices || {};
             
             // Directly overwrite local cache with cloud truth to prevent client resurrection
             localStorage.setItem('elata_bookings_v2', JSON.stringify(cloudBookings));
             localStorage.setItem('elata_blocked_dates_v2', JSON.stringify(cloudBlocked));
+            localStorage.setItem('elata_prices_v2', JSON.stringify(cloudPrices));
+
+            applyDynamicPrices(cloudPrices);
         } catch (e) {
             console.warn("Cloud sync failed, using localStorage cache", e);
         }
@@ -26,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let bookings = cloudData.bookings || [];
             let blocked_dates = cloudData.blocked_dates || [];
+            let prices = cloudData.prices || {};
 
             // Only append the new booking if it doesn't already exist in cloud
             if (newBooking && newBooking.id) {
@@ -38,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await fetch('/api/data', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ bookings, blocked_dates })
+                body: JSON.stringify({ bookings, blocked_dates, prices })
             });
 
             // Update local cache with the authoritative cloud state
@@ -347,6 +352,75 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (bookingChildrenSelect) {
         bookingChildrenSelect.addEventListener('change', calculatePrices);
+    }
+
+    function applyDynamicPrices(prices) {
+        if (!prices || Object.keys(prices).length === 0) return;
+
+        // 1. Update main page room grid cards
+        const roomNameElements = document.querySelectorAll('.room-info h3');
+        roomNameElements.forEach(h3 => {
+            const roomName = h3.textContent.trim();
+            let matchedPrice = prices[roomName];
+            
+            // Check normalized match (strip quotes)
+            if (!matchedPrice) {
+                const normalized = roomName.replace('«', '').replace('»', '').replace('"', '').replace('"', '').trim();
+                matchedPrice = prices[normalized];
+            }
+
+            if (matchedPrice) {
+                const priceEl = h3.parentElement.querySelector('.room-price');
+                if (priceEl) {
+                    priceEl.textContent = `від ${matchedPrice.toLocaleString()} грн / ніч`;
+                }
+            }
+        });
+
+        // 2. Update mini cards inside booking wizard
+        const miniCards = document.querySelectorAll('.room-mini-card');
+        miniCards.forEach(card => {
+            const roomVal = card.getAttribute('data-room-val');
+            let matchedPrice = prices[roomVal];
+
+            if (!matchedPrice) {
+                const normalized = roomVal.replace('«', '').replace('»', '').replace('"', '').replace('"', '').trim();
+                matchedPrice = prices[normalized];
+            }
+
+            if (matchedPrice) {
+                card.setAttribute('data-room-price', matchedPrice);
+                const priceSpan = card.querySelector('.room-mini-price');
+                if (priceSpan) {
+                    priceSpan.textContent = `${matchedPrice.toLocaleString()} ₴ / ніч`;
+                }
+            }
+        });
+
+        // 3. Keep memory pricing variable synced if wizard is active
+        const activeCard = document.querySelector('.room-mini-card.active');
+        if (activeCard) {
+            selectedRoomPrice = parseInt(activeCard.getAttribute('data-room-price')) || selectedRoomPrice;
+        }
+        
+        // 4. Update inspector price tag if currently open
+        const inspectorPrice = document.getElementById('inspectorPrice');
+        if (inspectorPrice) {
+            inspectorPrice.innerText = `₴ ${selectedRoomPrice.toLocaleString()} / ніч`;
+        }
+
+        // 5. Recalculate dynamic night count prices
+        calculatePrices();
+    }
+
+    // Immediately apply cached prices on page load if available
+    try {
+        const cachedPrices = JSON.parse(localStorage.getItem('elata_prices_v2'));
+        if (cachedPrices) {
+            applyDynamicPrices(cachedPrices);
+        }
+    } catch (e) {
+        console.warn("Failed to load cached prices on load", e);
     }
 
     function setStep2ButtonsDisabled(disabled) {
