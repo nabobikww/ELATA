@@ -4,7 +4,7 @@ const DB_URL = 'https://jsonbin-zeta.vercel.app/api/bins/LaH3DFwkrP';
 
 async function sendTelegramNotification(b) {
     const TG_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8698453460:AAFtQI4lzlQKEjZtWd71u7hBxFsOGfuHWRU';
-    const TG_CHAT_ID = process.env.TELEGRAM_CHAT_ID || 'ВСТАВТЕ_CHAT_ID_СЮДИ';
+    const TG_CHAT_ID = process.env.TELEGRAM_CHAT_ID || '6239669001';
     
     if (!TG_BOT_TOKEN || !TG_CHAT_ID || TG_BOT_TOKEN.includes('СЮДИ') || TG_CHAT_ID.includes('СЮДИ')) {
         console.log("Telegram credentials not configured.");

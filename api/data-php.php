@@ -16,7 +16,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 function sendTelegramNotification($b) {
     $tg_bot_token = getenv('TELEGRAM_BOT_TOKEN') ?: '8698453460:AAFtQI4lzlQKEjZtWd71u7hBxFsOGfuHWRU';
-    $tg_chat_id = getenv('TELEGRAM_CHAT_ID') ?: 'ВСТАВТЕ_CHAT_ID_СЮДИ';
+    $tg_chat_id = getenv('TELEGRAM_CHAT_ID') ?: '6239669001';
     
     if (!$tg_bot_token || !$tg_chat_id || strpos($tg_bot_token, 'СЮДИ') !== false || strpos($tg_chat_id, 'СЮДИ') !== false) {
         return;
