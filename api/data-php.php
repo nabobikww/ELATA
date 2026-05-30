@@ -429,7 +429,7 @@ function handleTelegramWebhook($update) {
         usort($bookings, function($a, $b) {
             $idA = isset($a['id']) ? intval($a['id']) : 0;
             $idB = isset($b['id']) ? intval($b['id']) : 0;
-            return $idB - idA;
+            return $idB - $idA;
         });
 
         $limit = 10;
