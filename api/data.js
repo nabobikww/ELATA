@@ -2,6 +2,47 @@
 // Vercel Serverless Function to proxy cloud database requests and bypass CORS
 const DB_URL = 'https://jsonbin-zeta.vercel.app/api/bins/LaH3DFwkrP';
 
+async function sendTelegramNotification(b) {
+    const TG_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8698453460:AAFtQI4lzlQKEjZtWd71u7hBxFsOGfuHWRU';
+    const TG_CHAT_ID = process.env.TELEGRAM_CHAT_ID || 'ВСТАВТЕ_CHAT_ID_СЮДИ';
+    
+    if (!TG_BOT_TOKEN || !TG_CHAT_ID || TG_BOT_TOKEN.includes('СЮДИ') || TG_CHAT_ID.includes('СЮДИ')) {
+        console.log("Telegram credentials not configured.");
+        return;
+    }
+    
+    const text = `📥 *Нова заявка на бронювання!*
+
+🆔 *ID:* #${b.id}
+👤 *Гість:* ${b.name}
+📞 *Телефон:* ${b.phone}
+🏨 *Номер:* ${b.room}
+📅 *Дати:* ${b.dates}
+💬 *Коментар:* ${b.comment || '-'}`;
+
+    const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage`;
+    
+    try {
+        const chatIds = TG_CHAT_ID.split(',').map(id => id.trim());
+        for (const chatId of chatIds) {
+            if (chatId) {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: text,
+                        parse_mode: 'Markdown'
+                    })
+                });
+            }
+        }
+        console.log("Telegram notification sent successfully.");
+    } catch (e) {
+        console.error("Failed to send Telegram notification:", e);
+    }
+}
+
 module.exports = async (req, res) => {
     // Enable CORS for local testing (e.g. file:/// or localhost)
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -24,14 +65,27 @@ module.exports = async (req, res) => {
                 throw new Error(`Failed to fetch from DB: ${response.statusText}`);
             }
             const data = await response.json();
-            // JSONBin returns { "data": { "bookings": [...], "blocked_dates": [...] } }
-            // Let's normalize it to return the inner data
             const innerData = data.data || data;
             res.status(200).json(innerData);
         } else if (req.method === 'PUT' || req.method === 'POST') {
-            // Forward the payload to JSONBin
             const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
             
+            // 1. Fetch old bookings to detect if a brand new booking is being added
+            let newBookings = [];
+            try {
+                const getRes = await fetch(DB_URL);
+                if (getRes.ok) {
+                    const oldData = await getRes.json();
+                    const oldBookings = (oldData.data || oldData).bookings || [];
+                    const oldIds = new Set(oldBookings.map(b => b && b.id ? b.id.toString() : ''));
+                    
+                    newBookings = (payload.bookings || []).filter(b => b && b.id && !oldIds.has(b.id.toString()) && b.status === 'Нове');
+                }
+            } catch (err) {
+                console.error("Failed to read old data for comparison:", err);
+            }
+
+            // 2. Save new payload to cloud database
             const response = await fetch(DB_URL, {
                 method: 'PUT',
                 headers: {
@@ -45,6 +99,14 @@ module.exports = async (req, res) => {
             }
 
             const result = await response.json();
+
+            // 3. Trigger Telegram notifications asynchronously in the background
+            if (newBookings.length > 0) {
+                for (const b of newBookings) {
+                    await sendTelegramNotification(b);
+                }
+            }
+
             res.status(200).json(result);
         } else {
             res.status(405).json({ error: 'Method not allowed' });
