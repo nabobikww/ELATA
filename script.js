@@ -902,8 +902,8 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleMenu();
         });
 
-        // Close menu when clicking a link
-        mobileNavDropdown.querySelectorAll('a').forEach(link => {
+        // Close menu when clicking a link (excluding expandable contacts triggers)
+        mobileNavDropdown.querySelectorAll('a:not(#mobileContactsTrigger):not(.mobile-contact-drawer-value)').forEach(link => {
             link.addEventListener('click', closeMenu);
         });
 
@@ -2107,22 +2107,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Background cache warming sync on page load
     syncWithCloud();
 
-    // Expandable Contacts Section under Reviews
-    const contactsTriggerBtn = document.getElementById('contactsTriggerBtn');
-    const contactsExpandPanel = document.getElementById('contactsExpandPanel');
+    // Expandable Contacts Section in Mobile Drawer
+    const mobileContactsTrigger = document.getElementById('mobileContactsTrigger');
+    const mobileContactsExpand = document.getElementById('mobileContactsExpand');
 
-    if (contactsTriggerBtn && contactsExpandPanel) {
-        contactsTriggerBtn.addEventListener('click', () => {
-            const isActive = contactsExpandPanel.classList.toggle('active');
-            contactsTriggerBtn.classList.toggle('active');
+    if (mobileContactsTrigger && mobileContactsExpand) {
+        mobileContactsTrigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const isActive = mobileContactsExpand.classList.toggle('active');
+            mobileContactsTrigger.classList.toggle('active');
             
             if (isActive) {
-                contactsTriggerBtn.textContent = 'Згорнути';
-                setTimeout(() => {
-                    contactsExpandPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }, 150);
+                mobileContactsTrigger.style.color = 'var(--clr-champagne)';
             } else {
-                contactsTriggerBtn.textContent = 'Контакти';
+                mobileContactsTrigger.style.color = '';
             }
         });
     }
