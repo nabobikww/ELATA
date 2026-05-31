@@ -27,6 +27,7 @@
     /* Color Palette */
     --clr-alabaster: #FAF8F5;    /* Warm alabaster cream */
     --clr-champagne: #C5A880;    /* Satin champagne gold */
+    --clr-gold: var(--clr-champagne); /* Base gold alias */
     --clr-gold-light: #E6D3B8;   /* Soft highlight gold */
     --clr-gold-dark: #9E835B;    /* Rich shadow gold */
     --clr-obsidian: #0A0C0E;     /* Swapped: Primary deep obsidian black background */
@@ -1128,8 +1129,8 @@ p {
 
 .carousel-btn:hover {
     background: var(--clr-obsidian);
-    color: var(--clr-milk);
-    border-color: var(--clr-obsidian);
+    color: var(--clr-gold-light);
+    border-color: var(--clr-champagne);
     transform: translateY(-50%) scale(1.08);
 }
 
@@ -1562,7 +1563,7 @@ p {
 }
 
 .footer-bottom a:hover {
-    color: var(--clr-milk);
+    color: var(--clr-gold-light);
     text-shadow: 0 0 10px rgba(197, 168, 128, 0.5);
 }
 
@@ -2125,7 +2126,7 @@ body.modal-open {
 
 .mobile-nav-dropdown a {
     text-decoration: none;
-    color: var(--clr-milk);
+    color: var(--clr-charcoal);
     font-family: 'Montserrat', sans-serif;
     font-weight: 600;
     font-size: 0.95rem;
@@ -2191,7 +2192,7 @@ body.modal-open {
     gap: 0.6rem;
     background: var(--bg-secondary);
     border: 1px solid rgba(197, 168, 128, 0.3);
-    color: var(--clr-milk) !important;
+    color: var(--clr-charcoal) !important;
     text-decoration: none;
     font-family: 'Outfit', sans-serif;
     font-size: 0.95rem;
@@ -3950,7 +3951,7 @@ body.modal-open {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(197, 168, 128, 0.3);
-    color: var(--clr-milk);
+    color: var(--clr-champagne);
     display: flex;
     align-items: center;
     justify-content: center;
