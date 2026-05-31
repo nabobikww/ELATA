@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const login = loginInput.value.trim();
         const pass = passwordInput.value.trim();
         
-        if (login === 'Admin' && pass === 'Elata00Aparts00') {
+        if (login === 'Admin' && pass === 'Elata88Aparts88') {
             sessionStorage.setItem('elata_logged_in_user', 'Admin');
             checkAuth();
             loginInput.value = '';
