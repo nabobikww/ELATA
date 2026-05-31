@@ -2106,4 +2106,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Background cache warming sync on page load
     syncWithCloud();
+
+    // Expandable Contacts Section under Reviews
+    const contactsTriggerBtn = document.getElementById('contactsTriggerBtn');
+    const contactsExpandPanel = document.getElementById('contactsExpandPanel');
+
+    if (contactsTriggerBtn && contactsExpandPanel) {
+        contactsTriggerBtn.addEventListener('click', () => {
+            const isActive = contactsExpandPanel.classList.toggle('active');
+            contactsTriggerBtn.classList.toggle('active');
+            
+            if (isActive) {
+                contactsTriggerBtn.textContent = 'Згорнути';
+                setTimeout(() => {
+                    contactsExpandPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 150);
+            } else {
+                contactsTriggerBtn.textContent = 'Контакти';
+            }
+        });
+    }
 });
