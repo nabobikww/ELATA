@@ -877,35 +877,47 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 4.1 Mobile Hamburger Menu Toggle Logic
+    // 4.1 Mobile Hamburger Menu Toggle Logic (Drawer style with Backdrop Blur Overlay)
     const menuToggle = document.getElementById('menuToggle');
     const mobileNavDropdown = document.getElementById('mobileNavDropdown');
+    const mobileNavOverlay = document.getElementById('mobileNavOverlay');
     
     if (menuToggle && mobileNavDropdown) {
-        menuToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
+        const toggleMenu = () => {
             menuToggle.classList.toggle('active');
             mobileNavDropdown.classList.toggle('active');
+            if (mobileNavOverlay) mobileNavOverlay.classList.toggle('active');
             if (header) header.classList.toggle('menu-open');
+        };
+
+        const closeMenu = () => {
+            menuToggle.classList.remove('active');
+            mobileNavDropdown.classList.remove('active');
+            if (mobileNavOverlay) mobileNavOverlay.classList.remove('active');
+            if (header) header.classList.remove('menu-open');
+        };
+
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMenu();
         });
 
         // Close menu when clicking a link
         mobileNavDropdown.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                menuToggle.classList.remove('active');
-                mobileNavDropdown.classList.remove('active');
-                if (header) header.classList.remove('menu-open');
-            });
+            link.addEventListener('click', closeMenu);
         });
 
         // Close menu when clicking outside
         document.addEventListener('click', (e) => {
             if (!menuToggle.contains(e.target) && !mobileNavDropdown.contains(e.target)) {
-                menuToggle.classList.remove('active');
-                mobileNavDropdown.classList.remove('active');
-                if (header) header.classList.remove('menu-open');
+                closeMenu();
             }
         });
+
+        // Close menu when clicking overlay
+        if (mobileNavOverlay) {
+            mobileNavOverlay.addEventListener('click', closeMenu);
+        }
     }
 
     // 5. Advanced Scroll Effects

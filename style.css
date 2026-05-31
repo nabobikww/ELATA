@@ -2101,46 +2101,126 @@ body.modal-open {
     display: none;
 }
 
+/* Premium Slide-out Mobile Navigation Drawer */
 .mobile-nav-dropdown {
-    position: absolute;
-    top: 70px;
-    left: 0;
-    width: 100%;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100vh;
     background: rgba(10, 12, 14, 0.98);
-    border-bottom: 1px solid rgba(197, 168, 128, 0.15);
-    display: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-left: 1px solid rgba(197, 168, 128, 0.15);
+    display: flex;
     flex-direction: column;
-    padding: 0;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.4s ease, opacity 0.4s ease;
+    padding: 6rem 1.5rem 2rem 1.5rem;
+    box-sizing: border-box;
+    transform: translateX(100%);
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.45s ease;
     opacity: 0;
     z-index: 9998;
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
 }
 
 .mobile-nav-dropdown a {
     text-decoration: none;
-    color: var(--clr-charcoal);
+    color: var(--clr-milk);
     font-family: 'Montserrat', sans-serif;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     text-transform: uppercase;
     letter-spacing: 0.22em;
-    padding: 1.1rem 2rem;
+    padding: 1.25rem 1rem;
     border-bottom: 1px solid rgba(197, 168, 128, 0.08);
     transition: var(--transition-smooth);
     opacity: 0.85;
 }
 
-.mobile-nav-dropdown a:last-child {
-    border-bottom: none;
-}
-
 .mobile-nav-dropdown a:hover {
     color: var(--clr-gold-dark);
     opacity: 1;
-    padding-left: 2.5rem; /* Sleek slide-right on hover */
+    padding-left: 1.5rem;
+}
+
+/* Mobile Navigation Backdrop Overlay */
+.mobile-nav-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.45s ease;
+    z-index: 9997;
+}
+
+.mobile-nav-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Contact Info Section inside Mobile Menu */
+.mobile-nav-contact {
+    margin-top: auto;
+    padding: 2rem 1rem 1rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    border-top: 1px solid rgba(197, 168, 128, 0.15);
+}
+
+.mobile-contact-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--clr-champagne);
+    opacity: 0.75;
+}
+
+.mobile-contact-phone-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: var(--bg-secondary);
+    border: 1px solid rgba(197, 168, 128, 0.3);
+    color: var(--clr-milk) !important;
+    text-decoration: none;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.85rem 1rem;
+    border-radius: 30px;
+    letter-spacing: 0.05em;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    border-bottom: none !important; /* Avoid inheriting border-bottom */
+    opacity: 1 !important;
+}
+
+.mobile-contact-phone-btn svg {
+    stroke: var(--clr-champagne);
+    transition: stroke 0.3s ease;
+}
+
+.mobile-contact-phone-btn:hover {
+    background: var(--clr-champagne);
+    border-color: var(--clr-champagne);
+    color: var(--bg-primary) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(197, 168, 128, 0.25);
+    padding-left: 1rem !important; /* Cancel side nav padding hover */
+}
+
+.mobile-contact-phone-btn:hover svg {
+    stroke: var(--bg-primary);
 }
 
 /* ==================================================
@@ -3075,9 +3155,8 @@ body.modal-open {
     }
 
     .mobile-nav-dropdown.active {
-        max-height: 350px;
-        padding: 1rem 0;
-        opacity: 1;
+        transform: translateX(0) !important;
+        opacity: 1 !important;
     }
 
     .mobile-booking-btn {
