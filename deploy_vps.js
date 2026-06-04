@@ -24,6 +24,7 @@ const uploadExcludeList = [
     'package-lock.json',
     'package.json',
     'deploy_vps.js',
+    'download_flatpickr.js',
     '.gitignore',
     'README.md'
 ];
@@ -39,6 +40,11 @@ function getFilesToUpload(dir, baseDir = '') {
         if (stat.isDirectory()) {
             files = files.concat(getFilesToUpload(fullPath, relPath));
         } else {
+            // Exclude large unused raw assets from uploading
+            const ext = path.extname(item).toLowerCase();
+            if (['.heic', '.mov', '.pdf'].includes(ext)) {
+                continue;
+            }
             files.push({
                 localPath: fullPath,
                 remotePath: path.join(remoteDir, relPath).replace(/\\/g, '/')

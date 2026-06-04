@@ -102,9 +102,9 @@
         href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@700;800&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
         rel="stylesheet">
         
-    <!-- Flatpickr for Date Selection -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+    <!-- Flatpickr for Date Selection (Loaded Locally for Flawless Reliability) -->
+    <link rel="stylesheet" href="flatpickr/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="flatpickr/airbnb.css">
 </head>
 
 <body>
@@ -120,6 +120,19 @@
             <p class="preloader-status">Завантаження...</p>
         </div>
     </div>
+    <script>
+        // Safety preloader bypass in case script.js or CDNs fail to load or transition fails
+        setTimeout(function() {
+            var loader = document.querySelector('.preloader');
+            if (loader && loader.style.display !== 'none') {
+                loader.classList.add('preloader-hidden');
+                setTimeout(function() {
+                    loader.style.display = 'none';
+                }, 1300);
+                console.warn('Preloader safety override triggered.');
+            }
+        }, 3000);
+    </script>
 
     <!-- Navbar -->
     <header class="navbar">
@@ -1427,8 +1440,9 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://npmcdn.com/flatpickr/dist/l10n/uk.js"></script>
+    <!-- Flatpickr scripts loaded locally to prevent CDN/Network load failures -->
+    <script src="flatpickr/flatpickr.min.js"></script>
+    <script src="flatpickr/uk.js"></script>
     <script src="script.js?v=2.0.1"></script>
 </body>
 

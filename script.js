@@ -103,6 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (preloader) {
         setTimeout(() => {
             preloader.classList.add('preloader-hidden');
+            // Safe fallback to guarantee preloader is hidden and removed from document flow
+            setTimeout(() => {
+                preloader.style.display = 'none';
+            }, 1400); // 1.2s transition duration + 200ms safety buffer
         }, 800); // Small delay to show brand logo
 
         preloader.addEventListener('transitionend', () => {
@@ -479,14 +483,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Initialize inline range flatpickr
-        fpInline = flatpickr(calendarContainer, {
-            inline: true,
-            mode: "range",
-            minDate: "today",
-            disable: blockedRanges,
-            dateFormat: "Y-m-d",
-            locale: "uk",
-            defaultDate: selectedCheckinVal && selectedCheckoutVal ? [selectedCheckinVal, selectedCheckoutVal] : [],
+        try {
+            // Defensively check if Ukrainian locale is loaded, fallback to default English if not
+            const activeLocale = (typeof flatpickr !== 'undefined' && flatpickr.l10ns && flatpickr.l10ns.uk) ? "uk" : "default";
+
+            fpInline = flatpickr(calendarContainer, {
+                inline: true,
+                mode: "range",
+                minDate: "today",
+                disable: blockedRanges,
+                dateFormat: "Y-m-d",
+                locale: activeLocale,
+                defaultDate: selectedCheckinVal && selectedCheckoutVal ? [selectedCheckinVal, selectedCheckoutVal] : [],
             onDayCreate: function(dObj, dStr, fp, dayElem) {
                 const checkDate = new Date(dayElem.dateObj);
                 checkDate.setHours(0, 0, 0, 0);
@@ -608,6 +616,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+        } catch (err) {
+            console.error("Flatpickr initialization failed:", err);
+        }
     }
 
     // Toggle calendar popup
