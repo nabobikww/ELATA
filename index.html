@@ -95,16 +95,16 @@
     <link rel="icon" type="image/jpeg" href="elata-logo.jpg">
     <link rel="apple-touch-icon" href="elata-logo.jpg">
 
-    <!-- Modern Typography: Outfit -->
+    <!-- Modern Typography: Cinzel, Cormorant Garamond, Montserrat, Outfit, Playfair Display -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Montserrat:wght@700;800&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Montserrat:wght@500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
         rel="stylesheet">
         
     <!-- Flatpickr for Date Selection (Loaded Locally for Flawless Reliability) -->
-    <link rel="stylesheet" href="flatpickr/flatpickr.min.css">
-    <link rel="stylesheet" type="text/css" href="flatpickr/airbnb.css">
+    <link rel="stylesheet" href="flatpickr/flatpickr.min.css" media="print" onload="this.media='all'">
+    <link rel="stylesheet" type="text/css" href="flatpickr/airbnb.css" media="print" onload="this.media='all'">
 </head>
 
 <body>
@@ -1441,9 +1441,9 @@
     </div>
 
     <!-- Flatpickr scripts loaded locally to prevent CDN/Network load failures -->
-    <script src="flatpickr/flatpickr.min.js"></script>
-    <script src="flatpickr/uk.js"></script>
-    <script src="script.js?v=2.0.1"></script>
+    <script src="flatpickr/flatpickr.min.js" defer></script>
+    <script src="flatpickr/uk.js" defer></script>
+    <script src="script.js?v=2.0.2" defer></script>
 </body>
 
 </html>

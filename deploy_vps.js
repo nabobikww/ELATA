@@ -26,7 +26,10 @@ const uploadExcludeList = [
     'deploy_vps.js',
     'download_flatpickr.js',
     '.gitignore',
-    'README.md'
+    'README.md',
+    'leaf_shadow.png',
+    'vase_wheat.png',
+    'ssh_inspect.js'
 ];
 
 function getFilesToUpload(dir, baseDir = '') {
@@ -180,22 +183,94 @@ function configureNginx(callback) {
     listen 80;
     listen [::]:80;
     server_name elataaparts.com www.elataaparts.com;
+    
+    # Redirect all HTTP traffic to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name elataaparts.com www.elataaparts.com;
+
     root ${remoteDir};
     index index.html;
 
+    # SSL Certificates (Managed by Certbot but referenced directly)
+    ssl_certificate /etc/letsencrypt/live/elataaparts.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/elataaparts.com/privkey.pem;
+
+    # SSL Configuration Optimizations
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:SSL:50m;
+    ssl_session_tickets off;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers off;
+
+    # High-Performance Gzip Compression
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_buffers 16 8k;
+    gzip_http_version 1.1;
+    gzip_min_length 256;
+    gzip_types
+        application/atom+xml
+        application/javascript
+        application/json
+        application/ld+json
+        application/manifest+json
+        application/rss+xml
+        application/vnd.geo+json
+        application/vnd.ms-fontobject
+        application/x-font-ttf
+        application/x-web-app-manifest+json
+        application/xhtml+xml
+        application/xml
+        font/opentype
+        image/bmp
+        image/svg+xml
+        image/x-icon
+        text/cache-manifest
+        text/css
+        text/plain
+        text/vcard
+        text/vnd.rim.location.code
+        text/vtt
+        text/x-component
+        text/x-cross-domain-policy;
+
+    # Security Headers
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+
+    # Main Location
     location / {
-        try_files \$uri \$uri/ =404;
+        try_files $uri $uri/ =404;
     }
 
+    # API configuration
     location = /api/data {
         include fastcgi_params;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
         fastcgi_param SCRIPT_FILENAME ${remoteDir}/api/data-php.php;
     }
 
-    location ~ \\.php\$ {
+    # PHP scripts fallback
+    location ~ \\.php$ {
         include snippets/fastcgi-php.conf;
         fastcgi_pass unix:/var/run/php/php8.3-fpm.sock;
+    }
+
+    # Browser Cache-Control Headers for Static Files (Speed up returning loads to 0 seconds)
+    location ~* \\.(?:css|js|webp|png|jpg|jpeg|gif|ico|svg|mp4|mov|otf|ttf|woff|woff2|pdf)$ {
+        expires 1y;
+        add_header Cache-Control "public, no-transform";
+        access_log off;
     }
 }`;
 
