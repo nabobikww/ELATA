@@ -2136,4 +2136,50 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // ---- Native Performance Deferrals & Lazy Loading (LTE/Slow Connection Optimization) ----
+    
+    // 1. Lazy load hidden hero slides 1 second after window onload
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            const deferredHeroSlides = document.querySelectorAll('.hero-slides img[data-src]');
+            deferredHeroSlides.forEach(img => {
+                const dataSrc = img.getAttribute('data-src');
+                if (dataSrc) {
+                    img.src = dataSrc;
+                    img.removeAttribute('data-src');
+                }
+            });
+        }, 1000);
+    });
+
+    // 2. Lazy load the heavy reviews background video when user approaches the section
+    const reviewsSection = document.getElementById('reviews');
+    const reviewsVideo = document.querySelector('.reviews-bg-video');
+    
+    if (reviewsSection && reviewsVideo) {
+        const loadVideo = () => {
+            const dataSrc = reviewsVideo.getAttribute('data-src');
+            if (dataSrc) {
+                reviewsVideo.src = dataSrc;
+                reviewsVideo.removeAttribute('data-src');
+                reviewsVideo.load();
+            }
+        };
+        
+        if ('IntersectionObserver' in window) {
+            const videoObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        loadVideo();
+                        videoObserver.unobserve(reviewsSection);
+                    }
+                });
+            }, { rootMargin: '300px' }); // Load video when user is 300px away from the reviews section
+            videoObserver.observe(reviewsSection);
+        } else {
+            // Fallback for older browsers
+            window.addEventListener('load', loadVideo);
+        }
+    }
 });
